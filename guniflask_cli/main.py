@@ -215,9 +215,15 @@ class InitCommand(Command):
 
     def resolve_ignore_files(self, settings):
         ignore_files = set()
+        project_name = settings['project_name']
         # configure files required to ignore
+        if settings['application_type'] != 'monolithic':
+            ignore_files.add('{}/config/security_config.py'.format(project_name))
+        if settings['application_type'] != 'microservice':
+            ignore_files.add('{}/config/microservice_config.py'.format(project_name))
+
         if settings['authentication_type'] != 'jwt':
-            ignore_files.add('{}/config/jwt_config.py'.format(settings['project_name']))
+            ignore_files.add('{}/config/jwt_config.py'.format(project_name))
         return ignore_files
 
     def resolve_filename_mapping(self, settings):

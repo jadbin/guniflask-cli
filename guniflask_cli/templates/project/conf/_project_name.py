@@ -5,8 +5,9 @@
 
 
 # guniflask configuration
-guniflask = dict({% if authentication_type == 'jwt' %}
+guniflask = dict({% if application_type == 'microservice' and authentication_type == 'authorization_server' %}
+    authorization_server='authorization server address',{% endif %}{% if authentication_type == 'jwt' %}
     jwt=dict(
         secret='{{jwt_secret}}'
-    ){% endif %}
+    ),{% endif %}
 )
