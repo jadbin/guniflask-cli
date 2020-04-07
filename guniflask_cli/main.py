@@ -181,7 +181,10 @@ class InitCommand(Command):
             self.exitcode = 1
 
     def get_settings_by_steps(self, project_dir, old_settings=None):
-        step_chain = StepChain(AuthenticationTypeStep()).previous(PortStep()).previous(BaseNameStep())
+        step_chain = StepChain(AuthenticationTypeStep()) \
+            .previous(PortStep()) \
+            .previous(BaseNameStep()) \
+            .previous(ApplicationTypeStep())
         settings = {'project_dir': project_dir,
                     'old_settings': old_settings,
                     'cli_version': __version__}
@@ -213,6 +216,8 @@ class InitCommand(Command):
     def resolve_ignore_files(self, settings):
         ignore_files = set()
         # configure files required to ignore
+        if settings['authentication_type'] != 'jwt':
+            ignore_files.add('{}/config/jwt_config.py'.format(settings['project_name']))
         return ignore_files
 
     def resolve_filename_mapping(self, settings):
