@@ -7,6 +7,8 @@ import time
 from threading import Thread
 import json
 
+from guniflask_cli import __version__
+
 
 def show_version():
     res = subprocess.run("guniflask version", shell=True)
@@ -14,10 +16,10 @@ def show_version():
 
 
 def init_project(proj_dir):
-    from guniflask import __version__
 
     settings = {
-        'guniflask_version': __version__,
+        'application_type': 'monolithic',
+        'cli_version': __version__,
         'authentication_type': 'jwt',
         'port': 8000,
         'project_name': 'foo'
