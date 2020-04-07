@@ -186,6 +186,7 @@ class InitCommand(Command):
         self.print_copying_files()
         self.force = False
         self.ignore_files = self.resolve_ignore_files(settings)
+        self.filename_mapping = self.resolve_filename_mapping(settings)
 
         self.copytree(join(_template_folder, 'project'), project_dir, settings)
         print(flush=True)
@@ -196,6 +197,13 @@ class InitCommand(Command):
         # configure files required to ignore
         return ignore_files
 
+    def resolve_filename_mapping(self, settings):
+        m = {
+            '_project_name': settings['project_name'],
+            '_project_name.py': '{}.py'.format(settings['project_name'])
+        }
+        return m
+
     def copytree(self, src, dst, settings):
         names = os.listdir(src)
         ignored_names = ignore_patterns('*.pyc')(src, names)
@@ -203,7 +211,7 @@ class InitCommand(Command):
             if name in ignored_names:
                 continue
             src_path = join(src, name)
-            dst_name = self.render_string(name, **settings)
+            dst_name = self.render_filename(name)
             dst_path = join(dst, dst_name)
             dst_rel_path = self.relative_path(dst_path, settings['project_dir'])
 
@@ -211,14 +219,8 @@ class InitCommand(Command):
                 self.copytree(src_path, dst_path, settings)
             else:
                 content = self.read_file(src_path)
-                if dst_name.endswith('.tmpl'):
-                    dst_name = dst_name[:-5]
-                    dst_path = join(dst, dst_name)
-                    dst_rel_path = self.relative_path(dst_path, settings['project_dir'])
-                    try:
-                        content = self.render_string(content, **settings)
-                    except TemplateError:
-                        continue
+                content = self.render_string(content, **settings)
+
                 if dst_rel_path in self.ignore_files:
                     continue
                 if exists(dst_path):
@@ -269,6 +271,11 @@ class InitCommand(Command):
             os.makedirs(d)
         with open(path, 'w', encoding='utf-8') as f:
             f.write(raw)
+
+    def render_filename(self, name):
+        if name in self.filename_mapping:
+            return self.filename_mapping[name]
+        return name
 
     @staticmethod
     def render_string(raw, **kwargs):
