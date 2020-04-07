@@ -2,7 +2,7 @@
 
 from flask import render_template
 
-from guniflask.config.template import _template_folder
+from guniflask_cli.config import _template_folder
 from guniflask.web import blueprint, get_route
 
 

@@ -31,7 +31,7 @@ class PyTest(TestCommand):
 
 tests_require = read_requirements('test.txt')
 install_requires = [
-    'guniflask>=0.6.1,<0.7',
+    'guniflask>=0.7.0',
     'gunicorn>=20.0.4',
     'gevent>=1.4.0',
     'Jinja2>=2.10',
@@ -52,7 +52,7 @@ def main():
         long_description=long_description,
         author="jadbin",
         author_email="jadbin.com@hotmail.com",
-        license="Apache 2",
+        license="MIT",
         zip_safe=False,
         packages=find_packages(exclude=("tests",)),
         include_package_data=True,
@@ -65,7 +65,7 @@ def main():
         tests_require=tests_require,
         cmdclass={"test": PyTest},
         classifiers=[
-            "License :: OSI Approved :: Apache Software License",
+            "License :: OSI Approved :: MIT License",
             "Intended Audience :: Developers",
             "Programming Language :: Python",
             "Programming Language :: Python :: 3",

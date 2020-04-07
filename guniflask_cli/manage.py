@@ -145,7 +145,6 @@ class Debug(Command):
         os.environ.setdefault('GUNIFLASK_ACTIVE_PROFILES', 'dev')
 
     def run(self, args):
-        print('=================')
         app = GunicornApplication()
         if args.daemon:
             app.set_option('daemon', True)

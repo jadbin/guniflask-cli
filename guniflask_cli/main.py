@@ -14,6 +14,7 @@ from .utils import string_lowercase_underscore
 from .config import _template_folder
 from .command import Command
 from .step import InputStep, ChoiceStep, StepChain
+from . import __version__
 
 
 class BaseNameStep(InputStep):
@@ -162,12 +163,10 @@ class InitCommand(Command):
             self.exitcode = 1
 
     def get_settings_by_steps(self, project_dir, old_settings=None):
-        from guniflask import __version__
-
         step_chain = StepChain(AuthenticationTypeStep()).previous(PortStep()).previous(BaseNameStep())
         settings = {'project_dir': project_dir,
                     'old_settings': old_settings,
-                    'guniflask_version': __version__}
+                    'cli_version': __version__}
         print(flush=True)
         for cur_step, total_steps, step in step_chain:
             step.title = '({}/{}) {}'.format(cur_step, total_steps, step.title)
@@ -278,9 +277,7 @@ class InitCommand(Command):
 
     @staticmethod
     def print_welcome(project_dir):
-        from guniflask import __version__
-
-        print('\033[37mWelcome to guniflask generator\033[0m \033[33mv{}\033[0m'
+        print('\033[37mWelcome to guniflask-cli generator\033[0m \033[33mv{}\033[0m'
               .format(__version__), flush=True)
         print('\033[37mApplication file will be created in folder:\033[0m \033[33m{}\033[0m'
               .format(project_dir), flush=True)
@@ -343,9 +340,7 @@ class VersionCommand(Command):
         return "Print the version"
 
     def run(self, args):
-        from guniflask import __version__
-
-        print("guniflask version {}".format(__version__))
+        print("guniflask-cli version {}".format(__version__))
 
 
 def _get_commands_from_module():
