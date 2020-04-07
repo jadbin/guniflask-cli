@@ -17,6 +17,20 @@ from .step import InputStep, ChoiceStep, StepChain
 from . import __version__
 
 
+class ApplicationTypeStep(ChoiceStep):
+    desc = 'Which type of application would you like to create?'
+
+    def __init__(self):
+        super().__init__()
+        self.tooltip = 'Use arrow keys'
+        self.add_choice('Monolithic application (recommended for simple projects)', 'monolithic')
+        self.add_choice('Microservice application ', 'microservice')
+
+    def update_settings(self, settings):
+        application_type = self.selected_value
+        settings['application_type'] = application_type
+
+
 class BaseNameStep(InputStep):
     desc = 'What is the base name of your application?'
 
@@ -90,6 +104,10 @@ class AuthenticationTypeStep(ChoiceStep):
         self.tooltip = 'Use arrow keys'
         self.add_choice('No authentication', None)
         self.add_choice('JWT authentication', 'jwt')
+
+    def process_arguments(self, settings):
+        if settings.get('application_type') == 'microservice':
+            self.add_choice('Authentication with authorization server', 'authorization_server')
 
     def update_settings(self, settings):
         security = self.selected_value
