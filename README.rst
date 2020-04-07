@@ -2,7 +2,7 @@
 guniflask-cli
 =============
 
-.. image:: https://img.shields.io/badge/license-Apache 2-blue.svg
+.. image:: https://img.shields.io/github/license/jadbin/guniflask-cli
     :target: https://github.com/jadbin/guniflask-cli/blob/master/LICENSE
 
 Overview
