@@ -75,6 +75,7 @@ class SqlToModelGenerator:
 
     def render_imports(self, model):
         d = OrderedDict()
+        d.setdefault('guniflask.orm', 'BaseModelMixin')
         for col in model.table.columns:
             if col.server_default:
                 d.setdefault('sqlalchemy', ('text', '_text'))
@@ -91,7 +92,7 @@ class SqlToModelGenerator:
         return imports
 
     def render_model(self, model):
-        header_str = 'class {}(db.Model):\n'.format(model.class_name)
+        header_str = 'class {}(BaseModelMixin, db.Model):\n'.format(model.class_name)
         header_str += "{}__tablename__ = '{}'\n".format(self.indent, model.table.name)
         if self.bind:
             header_str += "{}__bind_key__ = '{}'\n".format(self.indent, self.bind)
