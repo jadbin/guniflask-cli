@@ -95,21 +95,15 @@ class GunicornApplication(Application):
 
     def _set_default_env(self):
         bind = self.options.get('bind', '127.0.0.1:8000')
-        if not isinstance(bind, List):
-            bind = [bind]
-        host = None
+        if not isinstance(bind, str):
+            raise ValueError('Invalid bind: {}'.format(bind))
+
         port = 80
-        for b in bind:
-            s = b.split(':')
-            if s[0] in ('unix', 'fd'):
-                continue
-            host = s[0]
-            if len(s) > 1:
-                try:
-                    port = int(s[1])
-                except ValueError:
-                    continue
-            break
+        s = bind.split(':')
+        host = s[0]
+        if len(s) > 1:
+            port = int(s[1])
+
         os.environ['GUNIFLASK_BIND_HOST'] = host
         os.environ['GUNIFLASK_BIND_PORT'] = str(port)
 
