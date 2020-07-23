@@ -191,6 +191,13 @@ class ChoiceStep(Step):
     def selected_value(self):
         return self.values[self.selected]
 
+    @selected_value.setter
+    def selected_value(self, value):
+        for i, v in enumerate(self.values):
+            if v == value:
+                self.selected = i
+                break
+
     def show_cursor(self):
         print('\033[?25h', end='', flush=True)
 

@@ -26,6 +26,11 @@ class ApplicationTypeStep(ChoiceStep):
         self.add_choice('Monolithic application (recommended for simple projects)', 'monolithic')
         self.add_choice('Microservice application ', 'microservice')
 
+    def process_arguments(self, settings):
+        old_settings = settings['old_settings']
+        if old_settings and 'application_type' in old_settings:
+            self.selected_value = old_settings['application_type']
+
     def update_settings(self, settings):
         application_type = self.selected_value
         settings['application_type'] = application_type
@@ -35,11 +40,12 @@ class BaseNameStep(InputStep):
     desc = 'What is the base name of your application?'
 
     def process_arguments(self, settings):
-        project_dir = settings['project_dir']
-        self.tooltip = string_lowercase_underscore(basename(project_dir))
         old_settings = settings['old_settings']
         if old_settings and 'project_name' in old_settings:
             self.tooltip = old_settings['project_name']
+        else:
+            project_dir = settings['project_dir']
+            self.tooltip = string_lowercase_underscore(basename(project_dir))
 
     def check_user_input(self, user_input):
         project_basename = string_lowercase_underscore(user_input)
@@ -62,10 +68,11 @@ class PortStep(InputStep):
     desc = 'Would you like to run your application on which port?'
 
     def process_arguments(self, settings):
-        self.tooltip = 8000
         old_settings = settings['old_settings']
         if old_settings and 'port' in old_settings:
             self.tooltip = old_settings['port']
+        else:
+            self.tooltip = 8000
 
     def check_user_input(self, user_input):
         user_input = user_input.strip()
@@ -106,6 +113,10 @@ class AuthenticationTypeStep(ChoiceStep):
         self.add_choice('JWT authentication', 'jwt')
 
     def process_arguments(self, settings):
+        old_settings = settings['old_settings']
+        if old_settings and 'authentication_type' in old_settings:
+            self.selected_value = old_settings['authentication_type']
+
         if settings.get('application_type') == 'microservice':
             self.add_choice('Authentication with authorization server', 'authorization_server')
 
