@@ -113,12 +113,12 @@ class AuthenticationTypeStep(ChoiceStep):
         self.add_choice('JWT authentication', 'jwt')
 
     def process_arguments(self, settings):
+        if settings.get('application_type') == 'microservice':
+            self.add_choice('Authentication with authorization server', 'authorization_server')
+
         old_settings = settings['old_settings']
         if old_settings and 'authentication_type' in old_settings:
             self.selected_value = old_settings['authentication_type']
-
-        if settings.get('application_type') == 'microservice':
-            self.add_choice('Authentication with authorization server', 'authorization_server')
 
     def update_settings(self, settings):
         security = self.selected_value
