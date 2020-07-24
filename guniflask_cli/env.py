@@ -49,8 +49,9 @@ def infer_project_name(home_dir):
         if project_name_regex.fullmatch(d) and isfile(join(home_dir, d, '__init__.py')) \
                 and isfile(join(home_dir, d, 'app.py')):
             candidates.append(d)
-    if len(candidates) == 0:
-        raise RuntimeError('Cannot infer the project nam')
+    if len(candidates) == 0 or len(candidates) > 1:
+        raise RuntimeError('Cannot infer the project name, candidates: {}'.format(candidates))
+    return candidates[0]
 
 
 def get_project_name_from_env():
