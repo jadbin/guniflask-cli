@@ -2,7 +2,6 @@
 
 import os
 from os.path import join, dirname, exists
-from typing import List
 
 from gunicorn.config import KNOWN_SETTINGS
 from gunicorn.app.base import Application
@@ -46,7 +45,8 @@ class GunicornApplication(Application):
             'worker_class': 'gevent',
             'pidfile': join(pid_dir, '{}-{}.pid'.format(project_name, id_string)),
             'accesslog': join(log_dir, '{}-{}.access.log'.format(project_name, id_string)),
-            'errorlog': join(log_dir, '{}-{}.error.log'.format(project_name, id_string))
+            'errorlog': join(log_dir, '{}-{}.error.log'.format(project_name, id_string)),
+            'proc_name': project_name
         }
         options.update(self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES')))
         # if debug

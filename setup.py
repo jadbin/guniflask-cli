@@ -30,13 +30,16 @@ class PyTest(TestCommand):
 
 
 tests_require = read_requirements('test.txt')
+version = read_version()
+version_info = version.split('.')
 install_requires = [
-    'guniflask>=0.7.0',
+    'guniflask>={},<{}.{}'.format(version, version_info[0], int(version_info[1]) + 1),
     'gunicorn>=20.0.4',
     'gevent>=1.4.0',
     'Jinja2>=2.10',
     'SQLAlchemy>=1.3.13',
     'inflect>=4.1.0',
+    'setproctitle>=1.1.10'
 ]
 
 
@@ -46,7 +49,7 @@ def main():
 
     setup(
         name="guniflask-cli",
-        version=read_version(),
+        version=version,
         url="https://github.com/jadbin/guniflask-cli",
         description="Standard tooling for Flask development with guniflask",
         long_description=long_description,
