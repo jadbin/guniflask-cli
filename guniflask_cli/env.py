@@ -5,6 +5,7 @@ import sys
 from os.path import join, isfile, isdir
 import re
 import json
+import getpass
 
 __all__ = ['set_default_env', 'infer_project_name', 'get_project_name_from_env']
 
@@ -27,7 +28,7 @@ def set_default_env():
     if not os.environ.get('GUNIFLASK_PID_DIR'):
         os.environ['GUNIFLASK_PID_DIR'] = join(home_dir, '.pid')
     if not os.environ.get('GUNIFLASK_ID_STRING'):
-        os.environ['GUNIFLASK_ID_STRING'] = os.getlogin()
+        os.environ['GUNIFLASK_ID_STRING'] = getpass.getuser()
 
 
 project_name_regex = re.compile(r'[a-zA-Z\-]+')
