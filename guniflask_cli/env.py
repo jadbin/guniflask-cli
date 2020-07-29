@@ -11,22 +11,22 @@ __all__ = ['set_default_env', 'infer_project_name', 'get_project_name_from_env']
 
 def set_default_env():
     home_dir = os.environ.get('GUNIFLASK_HOME')
-    if home_dir is None:
+    if not home_dir:
         home_dir = os.getcwd()
         os.environ['GUNIFLASK_HOME'] = home_dir
     if home_dir not in sys.path:
         sys.path.append(home_dir)
-    if 'GUNIFLASK_PROJECT_NAME' not in os.environ:
+    if not os.environ.get('GUNIFLASK_PROJECT_NAME'):
         project_name = infer_project_name(home_dir)
         if project_name:
             os.environ['GUNIFLASK_PROJECT_NAME'] = project_name
-    if 'GUNIFLASK_CONF_DIR' not in os.environ:
+    if not os.environ.get('GUNIFLASK_CONF_DIR'):
         os.environ['GUNIFLASK_CONF_DIR'] = join(home_dir, 'conf')
-    if 'GUNIFLASK_LOG_DIR' not in os.environ:
+    if not os.environ.get('GUNIFLASK_LOG_DIR'):
         os.environ['GUNIFLASK_LOG_DIR'] = join(home_dir, '.log')
-    if 'GUNIFLASK_PID_DIR' not in os.environ:
+    if not os.environ.get('GUNIFLASK_PID_DIR'):
         os.environ['GUNIFLASK_PID_DIR'] = join(home_dir, '.pid')
-    if 'GUNIFLASK_ID_STRING' not in os.environ:
+    if not os.environ.get('GUNIFLASK_ID_STRING'):
         os.environ['GUNIFLASK_ID_STRING'] = os.getlogin()
 
 
