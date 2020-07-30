@@ -218,7 +218,7 @@ class InitCommand(Command):
         self.print_copying_files()
         self.force = False
         self.ignore_files = self.resolve_ignore_files(settings)
-        self.filename_mapping = self.resolve_filename_mapping(settings)
+        self.filename_mapping = self.make_filename_mapping(settings)
 
         self.copytree(join(_template_folder, 'project'), project_dir, settings)
         print(flush=True)
@@ -237,7 +237,7 @@ class InitCommand(Command):
             ignore_files.add('{}/config/jwt_config.py'.format(project_name))
         return ignore_files
 
-    def resolve_filename_mapping(self, settings):
+    def make_filename_mapping(self, settings):
         m = {
             '_project_name': settings['project_name'],
             '_project_name.py': '{}.py'.format(settings['project_name'])
@@ -251,7 +251,7 @@ class InitCommand(Command):
             if name in ignored_names:
                 continue
             src_path = join(src, name)
-            dst_name = self.render_filename(name)
+            dst_name, is_template = self.resolve_filename(name)
             dst_path = join(dst, dst_name)
             dst_rel_path = self.relative_path(dst_path, settings['project_dir'])
 
@@ -259,7 +259,8 @@ class InitCommand(Command):
                 self.copytree(src_path, dst_path, settings)
             else:
                 content = self.read_file(src_path)
-                content = self.render_string(content, **settings)
+                if is_template:
+                    content = self.render_string(content, **settings)
 
                 if dst_rel_path in self.ignore_files:
                     continue
@@ -312,10 +313,15 @@ class InitCommand(Command):
         with open(path, 'w', encoding='utf-8') as f:
             f.write(raw)
 
-    def render_filename(self, name):
+    def resolve_filename(self, name):
+        if name.endswith('.jinja2'):
+            is_template = True
+            name = name.rsplit('.', maxsplit=1)[0]
+        else:
+            is_template = False
         if name in self.filename_mapping:
-            return self.filename_mapping[name]
-        return name
+            name = self.filename_mapping[name]
+        return name, is_template
 
     @staticmethod
     def render_string(raw, **kwargs):
