@@ -6,7 +6,7 @@ from os.path import join, dirname, exists
 from gunicorn.config import KNOWN_SETTINGS
 from gunicorn.app.base import Application
 
-from .config import load_profile_config
+from .config import load_profile_config, load_app_settings
 from .utils import walk_files
 from .env import get_project_name_from_env
 
@@ -32,7 +32,9 @@ class GunicornApplication(Application):
         from guniflask.app import create_app
 
         self._set_default_env()
-        return create_app(get_project_name_from_env())
+        name = get_project_name_from_env()
+        settings = load_app_settings(name)
+        return create_app(name, settings=settings)
 
     def _make_options(self):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']

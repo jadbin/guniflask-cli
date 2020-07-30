@@ -16,6 +16,7 @@ from .errors import UsageError
 from .command import Command
 from .gunicorn import GunicornApplication
 from .env import set_default_env, get_project_name_from_env
+from .config import load_app_settings
 
 
 class InitDb(Command):
@@ -46,9 +47,10 @@ class InitDb(Command):
         from guniflask.app import create_app
 
         project_name = get_project_name_from_env()
+        settings = load_app_settings(project_name)
 
         walk_modules(project_name)
-        app = create_app(project_name)
+        app = create_app(project_name, settings=settings)
         with app.app_context():
             s = app.extensions.get('sqlalchemy')
             if not s:
@@ -88,8 +90,9 @@ class TableToModel(Command):
         from guniflask.app import create_app
 
         project_name = get_project_name_from_env()
+        settings = load_app_settings(project_name)
 
-        app = create_app(project_name)
+        app = create_app(project_name, settings=settings)
         with app.app_context():
             settings = app.extensions['settings']
             s = app.extensions.get('sqlalchemy')
