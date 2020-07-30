@@ -213,6 +213,12 @@ class InitCommand(Command):
     def copy_files(self, project_dir, settings):
         settings = dict(settings)
         settings['project_dir'] = project_dir
+        settings['guniflask_min_version'] = __version__
+        version_info = __version__.split('.')
+        if version_info[0] == '0':
+            settings['guniflask_max_version'] = '{}.{}'.format(version_info[0], int(version_info[1]) + 1)
+        else:
+            settings['guniflask_max_version'] = '{}.0'.format(int(version_info[0]) + 1)
 
         print(flush=True)
         self.print_copying_files()
