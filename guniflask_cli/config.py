@@ -52,10 +52,15 @@ def load_app_settings(app_name) -> dict:
 
 
 def get_default_settings_from_env() -> dict:
-    kwargs = {'home': os.environ.get('GUNIFLASK_HOME', os.curdir),
+    kwargs = {'home': os.environ.get('GUNIFLASK_HOME'),
               'project_name': os.environ.get('GUNIFLASK_PROJECT_NAME')}
     if os.environ.get('GUNIFLASK_DEBUG'):
         kwargs['debug'] = True
     else:
         kwargs['debug'] = False
+    kwargs['address'] = os.environ.get('GUNIFLASK_ADDRESS')
+    port = os.environ.get('GUNIFLASK_PORT')
+    if port:
+        port = int(port)
+    kwargs['port'] = port
     return kwargs
