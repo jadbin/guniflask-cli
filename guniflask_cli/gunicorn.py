@@ -16,7 +16,7 @@ __all__ = ['GunicornApplication']
 class GunicornApplication(Application):
 
     def __init__(self):
-        self.options = self._make_options()
+        self.options: dict = None
         super().__init__()
 
     def set_option(self, key, value):
@@ -24,6 +24,7 @@ class GunicornApplication(Application):
             self.cfg.set(key, value)
 
     def load_config(self):
+        self.options = self._make_options()
         for key, value in self.options.items():
             if key in self.cfg.settings and value is not None:
                 self.cfg.set(key.lower(), value)
@@ -32,9 +33,9 @@ class GunicornApplication(Application):
         from guniflask.app import create_app
 
         self._set_default_env()
-        name = get_project_name_from_env()
-        settings = load_app_settings(name)
-        return create_app(name, settings=settings)
+        app_name = get_project_name_from_env()
+        app_settings = load_app_settings(app_name)
+        return create_app(app_name, settings=app_settings)
 
     def _make_options(self):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']
