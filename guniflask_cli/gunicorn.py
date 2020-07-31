@@ -30,7 +30,7 @@ class GunicornApplication(Application):
                 self.cfg.set(key.lower(), value)
 
     def load(self):
-        from guniflask.app import create_app
+        from guniflask.config import create_app
 
         self._set_default_env()
         app_name = get_project_name_from_env()
