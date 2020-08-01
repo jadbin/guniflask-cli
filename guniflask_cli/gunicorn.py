@@ -2,6 +2,7 @@
 
 import os
 from os.path import join, dirname, exists
+from functools import partial
 
 from gunicorn.config import KNOWN_SETTINGS
 from gunicorn.app.base import Application
@@ -57,11 +58,8 @@ class GunicornApplication(Application):
             options.update(self._make_debug_options())
         self._makedirs(options)
         # hook wrapper
-        self._set_hook_wrapper(options)
+        HookWrapper.wrap(options)
         return options
-
-    def _set_hook_wrapper(self, options):
-        HookWrapper.from_config(options)
 
     def _make_profile_options(self, active_profiles):
         conf_dir = os.environ['GUNIFLASK_CONF_DIR']
@@ -114,30 +112,24 @@ class GunicornApplication(Application):
 class HookWrapper:
     HOOKS = ['on_starting', 'on_reload', 'on_exit']
 
-    def __init__(self, config, on_starting=None, on_reload=None, on_exit=None):
-        self.config = config
-        self._on_starting = on_starting
-        self._on_reload = on_reload
-        self._on_exit = on_exit
+    def __init__(self, user_hooks, sys_hooks):
+        self.user_hooks = user_hooks
+        self.sys_hooks = sys_hooks
 
     @classmethod
-    def from_config(cls, config):
-        kw = {}
+    def wrap(cls, config, **kwargs):
+        user_hooks = {}
         for h in cls.HOOKS:
-            kw[h] = config.get(h)
-        wrapper = cls(config, **kw)
+            if h in config:
+                user_hooks[h] = config[h]
+        w = cls(user_hooks, kwargs)
         for h in cls.HOOKS:
-            config[h] = getattr(wrapper, h)
-        return wrapper
+            if h in w.user_hooks or h in w.sys_hooks:
+                config[h] = partial(w.on_event, key=h)
+        return w
 
-    def on_starting(self, server):
-        if self._on_starting is not None:
-            self._on_starting(server)
-
-    def on_reload(self, server):
-        if self._on_reload is not None:
-            self._on_reload(server)
-
-    def on_exit(self, server):
-        if self._on_exit is not None:
-            self._on_exit(server)
+    def on_event(self, server, key=None):
+        if key in self.user_hooks:
+            self.user_hooks[key](server)
+        if key in self.sys_hooks:
+            self.sys_hooks[key](server)
