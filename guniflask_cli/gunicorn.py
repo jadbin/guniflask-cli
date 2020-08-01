@@ -107,7 +107,7 @@ class GunicornApplication(Application):
         if len(s) > 1:
             port = int(s[1])
 
-        os.environ['GUNIFLASK_ADDRESS'] = host
+        os.environ['GUNIFLASK_HOST'] = host
         os.environ['GUNIFLASK_PORT'] = str(port)
 
 

@@ -59,7 +59,7 @@ def get_default_settings_from_env() -> dict:
         kwargs['debug'] = True
     else:
         kwargs['debug'] = False
-    kwargs['address'] = os.environ.get('GUNIFLASK_ADDRESS')
+    kwargs['host'] = os.environ.get('GUNIFLASK_HOST')
     port = os.environ.get('GUNIFLASK_PORT')
     if port:
         port = int(port)
