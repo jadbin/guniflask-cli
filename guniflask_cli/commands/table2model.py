@@ -36,7 +36,7 @@ class TableToModel(Command):
         os.environ.setdefault('GUNIFLASK_ACTIVE_PROFILES', 'dev')
 
     def run(self, args):
-        from guniflask.config import create_app
+        from guniflask.app import create_app
 
         project_name = get_project_name_from_env()
         settings = load_app_settings(project_name)
