@@ -7,6 +7,7 @@ import inspect
 from .commands.base import Command
 from .errors import UsageError
 from .utils import walk_modules
+from .env import set_default_env
 
 
 def _get_commands_from_module():
@@ -36,6 +37,7 @@ def _print_unknown_command(cmdname):
 
 
 def main(argv=None):
+    set_default_env()
     if argv is None:
         argv = sys.argv
     cmds = _get_commands_from_module()
