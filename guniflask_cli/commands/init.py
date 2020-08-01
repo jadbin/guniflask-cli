@@ -15,25 +15,6 @@ from guniflask_cli import __version__
 from .base import Command
 
 
-class ApplicationTypeStep(ChoiceStep):
-    desc = 'Which type of application would you like to create?'
-
-    def __init__(self):
-        super().__init__()
-        self.tooltip = 'Use arrow keys'
-        self.add_choice('Monolithic application (recommended for simple projects)', 'monolithic')
-        self.add_choice('Microservice application ', 'microservice')
-
-    def process_arguments(self, settings):
-        old_settings = settings['old_settings']
-        if old_settings and 'application_type' in old_settings:
-            self.selected_value = old_settings['application_type']
-
-    def update_settings(self, settings):
-        application_type = self.selected_value
-        settings['application_type'] = application_type
-
-
 class BaseNameStep(InputStep):
     desc = 'What is the base name of your application?'
 
@@ -109,11 +90,9 @@ class AuthenticationTypeStep(ChoiceStep):
         self.tooltip = 'Use arrow keys'
         self.add_choice('No authentication', None)
         self.add_choice('JWT authentication', 'jwt')
+        self.add_choice('Authentication with authorization server', 'authorization_server')
 
     def process_arguments(self, settings):
-        if settings.get('application_type') == 'microservice':
-            self.add_choice('Authentication with authorization server', 'authorization_server')
-
         old_settings = settings['old_settings']
         if old_settings and 'authentication_type' in old_settings:
             self.selected_value = old_settings['authentication_type']
@@ -192,8 +171,7 @@ class InitCommand(Command):
     def get_settings_by_steps(self, project_dir, old_settings=None):
         step_chain = StepChain(AuthenticationTypeStep()) \
             .previous(PortStep()) \
-            .previous(BaseNameStep()) \
-            .previous(ApplicationTypeStep())
+            .previous(BaseNameStep())
         settings = {'project_dir': project_dir,
                     'old_settings': old_settings,
                     'cli_version': __version__}
@@ -232,9 +210,7 @@ class InitCommand(Command):
         ignore_files = set()
         project_name = settings['project_name']
         # configure files required to ignore
-        if settings['application_type'] != 'monolithic':
-            ignore_files.add('{}/config/security_config.py'.format(project_name))
-        if settings['application_type'] != 'microservice':
+        if settings['authentication_type'] != 'authorization_server':
             ignore_files.add('{}/config/microservice_config.py'.format(project_name))
 
         if settings['authentication_type'] != 'jwt':

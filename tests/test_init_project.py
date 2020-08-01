@@ -18,7 +18,6 @@ def show_version():
 def init_project(proj_dir):
 
     settings = {
-        'application_type': 'monolithic',
         'cli_version': __version__,
         'authentication_type': 'jwt',
         'port': 8000,

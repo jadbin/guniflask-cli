@@ -1,21 +1,11 @@
 # coding=utf-8
 
-{% if authentication_type == 'authorization_server' -%}
 import requests
-{%- endif %}
-from guniflask.context import configuration
-{%- if authentication_type == 'authorization_server' %}, bean{%- endif %}
+
+from guniflask.context import configuration, bean
 from guniflask.config import settings
-{%- if authentication_type == 'authorization_server' %}
 from guniflask.oauth2_config import enable_resource_server, ResourceServerConfigurerAdapter
 from guniflask.oauth2 import TokenStore, JwtTokenStore, JwtAccessTokenConverter
-{%- endif %}
-from guniflask.security_config import enable_web_security, WebSecurityConfigurer, HttpSecurity
-{%- if authentication_type == 'jwt' %}
-
-from .jwt_config import JwtConfigurer
-{%- endif %}
-{%- if authentication_type == 'authorization_server' %}
 
 
 @configuration
@@ -47,20 +37,3 @@ class MicroserviceResourceConfiguration(ResourceServerConfigurerAdapter):
         resp = requests.get('{}/oauth/token_key'.format(server.rstrip('/')))
         assert resp.status_code == 200, 'Failed to get token key from authorization server'
         return resp.json()
-{%- endif %}
-
-
-@configuration
-@enable_web_security
-class MicroserviceWebSecurityConfiguration(WebSecurityConfigurer):
-
-    def configure_http(self, http: HttpSecurity):
-        cors = settings.get_by_prefix('guniflask.cors')
-        if cors:
-            http.cors(cors)
-        {%- if authentication_type == 'jwt' %}
-
-        jwt = settings.get_by_prefix('guniflask.jwt')
-        if jwt:
-            http.apply(JwtConfigurer(jwt))
-        {%- endif %}
