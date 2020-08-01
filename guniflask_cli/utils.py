@@ -78,3 +78,13 @@ def string_lowercase_underscore(s):
 
 def string_uppercase_underscore(s):
     return string_lowercase_underscore(s).upper()
+
+
+def read_pid(pidfile):
+    if isfile(pidfile):
+        with open(pidfile, 'r') as f:
+            line = f.readline()
+            if line:
+                pid = line.strip()
+                if pid:
+                    return int(pid)

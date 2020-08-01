@@ -43,6 +43,7 @@ def load_app_settings(app_name) -> dict:
     kwargs = get_default_settings_from_env()
     if conf_dir:
         c = load_profile_config(conf_dir, app_name, profiles=active_profiles, **kwargs)
+    # builtin settings should not be changed
     c.update(kwargs)
     s = {}
     for name in c:

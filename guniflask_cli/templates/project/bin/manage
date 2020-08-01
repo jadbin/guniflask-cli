@@ -5,4 +5,4 @@ bin=$(cd "$bin"; pwd)
 
 . "$bin"/app-config.sh
 
-guniflask-manage $@
+guniflask $@

@@ -59,8 +59,7 @@ def main():
         packages=find_packages(exclude=("tests",)),
         include_package_data=True,
         entry_points={
-            "console_scripts": ["guniflask = guniflask_cli.main:main",
-                                "guniflask-manage = guniflask_cli.manage:main"]
+            "console_scripts": ["guniflask = guniflask_cli.main:main"]
         },
         python_requires='>=3.6',
         install_requires=install_requires,
