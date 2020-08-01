@@ -64,5 +64,4 @@ def get_default_settings_from_env() -> dict:
     if port:
         port = int(port)
     kwargs['port'] = port
-    kwargs['id_string'] = os.environ.get('GUNIFLASK_ID_STRING')
     return kwargs
