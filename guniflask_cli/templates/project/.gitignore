@@ -10,6 +10,7 @@ docs/_build
 .coverage
 .idea
 .pytest_cache
+venv
 
 *.log
 *.pid
