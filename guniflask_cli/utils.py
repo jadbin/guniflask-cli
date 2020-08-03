@@ -8,6 +8,9 @@ from os.path import isfile, join, isdir
 from importlib import import_module
 from pkgutil import iter_modules
 import re
+import logging
+
+from flask import Flask
 
 
 def readchar():  # pragma: no cover
@@ -88,3 +91,14 @@ def read_pid(pidfile):
                 pid = line.strip()
                 if pid:
                     return int(pid)
+
+
+def redirect_logger(name, logger):
+    log = logging.getLogger(name)
+    log.handlers = logger.handlers
+    log.setLevel(logger.level)
+
+
+def redirect_app_logger(app: Flask, logger):
+    app.logger.handlers = logger.handlers
+    app.logger.setLevel(logger.level)

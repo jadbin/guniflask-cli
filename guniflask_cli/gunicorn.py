@@ -3,12 +3,13 @@
 import os
 from os.path import join, dirname, exists
 from functools import partial
+import logging
 
 from gunicorn.config import KNOWN_SETTINGS
 from gunicorn.app.base import Application
 
 from .config import load_profile_config, load_app_settings
-from .utils import walk_files
+from .utils import walk_files, redirect_app_logger, redirect_logger
 from .env import get_project_name_from_env
 
 __all__ = ['GunicornApplication']
@@ -36,7 +37,13 @@ class GunicornApplication(Application):
         self._set_default_env()
         app_name = get_project_name_from_env()
         app_settings = load_app_settings(app_name)
-        return create_app(app_name, settings=app_settings)
+
+        gunicorn_logger = logging.getLogger('gunicorn.error')
+        redirect_logger('guniflask', gunicorn_logger)
+        redirect_logger(app_name, gunicorn_logger)
+        app = create_app(app_name, settings=app_settings)
+        redirect_app_logger(app, gunicorn_logger)
+        return app
 
     def _make_options(self):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']
