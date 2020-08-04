@@ -32,7 +32,7 @@ class MicroserviceResourceConfiguration(ResourceServerConfigurerAdapter):
 
     def _get_key_from_authorization_server(self):
         server: str = settings.get_by_prefix('guniflask.authorization_server')
-        if not (server.startswith('http://') or server.startswith('https://')):
+        if '://' not in server:
             server = 'http://' + server
         resp = requests.get('{}/oauth/token_key'.format(server.rstrip('/')))
         assert resp.status_code == 200, 'Failed to get token key from authorization server'
