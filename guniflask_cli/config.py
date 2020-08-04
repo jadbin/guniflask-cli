@@ -31,9 +31,20 @@ def load_profile_config(conf_dir, name, profiles=None, **kwargs) -> dict:
                 pc_file = join(conf_dir, name + '_' + profile + '.py')
                 if isfile(pc_file):
                     c = load_config(pc_file, **kwargs)
-                    pc.update(c)
+                    _update_config(pc, c)
         pc['active_profiles'] = list(profiles)
     return pc
+
+
+def _update_config(old: dict, new: dict):
+    for k, v in new.items():
+        if k not in old:
+            old[k] = v
+        else:
+            if isinstance(v, dict) and isinstance(old[k], dict):
+                _update_config(old[k], v)
+            else:
+                old[k] = v
 
 
 def load_app_settings(app_name) -> dict:
@@ -44,7 +55,7 @@ def load_app_settings(app_name) -> dict:
     if conf_dir:
         c = load_profile_config(conf_dir, app_name, profiles=active_profiles, **kwargs)
     # builtin settings should not be changed
-    c.update(kwargs)
+    _update_config(c, kwargs)
     s = {}
     for name in c:
         if not name.startswith('_'):
