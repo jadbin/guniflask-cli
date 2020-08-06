@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import os
-from os.path import dirname, isfile, join
+from os.path import dirname, isfile, join, expanduser
 
 _template_folder = join(dirname(__file__), 'templates')
 
@@ -75,4 +75,5 @@ def get_default_settings_from_env() -> dict:
     if port:
         port = int(port)
     kwargs['port'] = port
+    kwargs['id_string'] = os.environ['GUNIFLASK_ID_STRING']
     return kwargs
