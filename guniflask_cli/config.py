@@ -51,7 +51,7 @@ def load_app_settings(app_name) -> dict:
     c = {}
     conf_dir = os.environ.get('GUNIFLASK_CONF_DIR')
     active_profiles = os.environ.get('GUNIFLASK_ACTIVE_PROFILES')
-    kwargs = get_default_settings_from_env()
+    kwargs = get_constant_settings_from_env()
     if conf_dir:
         c = load_profile_config(conf_dir, app_name, profiles=active_profiles, **kwargs)
     # builtin settings should not be changed
@@ -63,7 +63,7 @@ def load_app_settings(app_name) -> dict:
     return s
 
 
-def get_default_settings_from_env() -> dict:
+def get_constant_settings_from_env() -> dict:
     kwargs = {'home': os.environ.get('GUNIFLASK_HOME'),
               'project_name': os.environ.get('GUNIFLASK_PROJECT_NAME')}
     if os.environ.get('GUNIFLASK_DEBUG'):
