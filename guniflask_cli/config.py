@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import os
-from os.path import dirname, isfile, join, expanduser
+from os.path import dirname, isfile, join
 
 _template_folder = join(dirname(__file__), 'templates')
 
