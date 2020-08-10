@@ -75,5 +75,4 @@ def get_constant_settings_from_env() -> dict:
     if port:
         port = int(port)
     kwargs['port'] = port
-    kwargs['id_string'] = os.environ['GUNIFLASK_ID_STRING']
     return kwargs
