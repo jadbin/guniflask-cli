@@ -1,7 +1,7 @@
 # coding=utf-8
 
 import os
-from os.path import exists, join, abspath, isdir, basename, dirname
+from os.path import exists, join, abspath, isdir, basename, dirname, relpath
 from shutil import ignore_patterns
 import json
 
@@ -233,7 +233,7 @@ class InitCommand(Command):
             src_path = join(src, name)
             dst_name, is_template = self.resolve_filename(name)
             dst_path = join(dst, dst_name)
-            dst_rel_path = self.relative_path(dst_path, settings['project_dir'])
+            dst_rel_path = relpath(dst_path, settings['project_dir'])
 
             if isdir(src_path):
                 self.copytree(src_path, dst_path, settings)
@@ -269,16 +269,6 @@ class InitCommand(Command):
                 else:
                     self.print_copying_file('create', dst_rel_path)
                     self.write_file(dst_path, content)
-
-    @staticmethod
-    def relative_path(path, fpath):
-        path = abspath(path)
-        fpath = abspath(fpath)
-        if path.startswith(fpath):
-            path = path[len(fpath):]
-            if path.startswith(os.path.sep):
-                path = path[1:]
-        return path
 
     @staticmethod
     def read_file(path):
