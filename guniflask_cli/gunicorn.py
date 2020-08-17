@@ -4,6 +4,7 @@ import os
 from os.path import join, dirname, exists
 from functools import partial
 import logging
+import getpass
 
 from gunicorn.config import KNOWN_SETTINGS
 from gunicorn.app.base import Application
@@ -48,15 +49,15 @@ class GunicornApplication(Application):
     def _make_options(self):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']
         log_dir = os.environ['GUNIFLASK_LOG_DIR']
-        id_string = os.environ['GUNIFLASK_ID_STRING']
         project_name = get_project_name_from_env()
+        username = getpass.getuser()
         options = {
             'daemon': True,
             'workers': os.cpu_count(),
             'worker_class': 'gevent',
-            'pidfile': join(pid_dir, '{}-{}.pid'.format(project_name, id_string)),
-            'accesslog': join(log_dir, '{}-{}.access.log'.format(project_name, id_string)),
-            'errorlog': join(log_dir, '{}-{}.error.log'.format(project_name, id_string)),
+            'pidfile': join(pid_dir, '{}-{}.pid'.format(project_name, username)),
+            'accesslog': join(log_dir, '{}-{}.access.log'.format(project_name, username)),
+            'errorlog': join(log_dir, '{}-{}.error.log'.format(project_name, username)),
             'proc_name': project_name
         }
         options.update(self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES')))
