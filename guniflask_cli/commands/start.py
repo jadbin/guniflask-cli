@@ -3,7 +3,7 @@
 import os
 
 from guniflask_cli.gunicorn import GunicornApplication
-from .base import Command, check_pid
+from .base import Command
 
 
 class Start(Command):
@@ -29,9 +29,4 @@ class Start(Command):
         app = GunicornApplication()
         if args.daemon_off:
             app.set_option('daemon', False)
-
-        pidfile = app.options.get('pidfile')
-        if pidfile and not check_pid(pidfile):
-            self.exitcode = 1
-        else:
-            app.run()
+        app.run()
