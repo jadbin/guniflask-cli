@@ -66,7 +66,7 @@ class GunicornApplication(Application):
         self._makedirs(options)
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
-            options['pidfile'] = join(pid_dir, '{}-{}.pid'.format(project_name, username)),
+            options['pidfile'] = join(pid_dir, '{}-{}.pid'.format(project_name, username))
         # hook wrapper
         HookWrapper.wrap(options)
         return options
