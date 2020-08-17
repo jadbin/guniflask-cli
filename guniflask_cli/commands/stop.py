@@ -31,7 +31,8 @@ class Stop(Command):
         for p in profile_list:
             os.environ['GUNIFLASK_ACTIVE_PROFILES'] = p
             app = GunicornApplication()
-            pid = read_pid(app.options.get('pidfile'))
+            pidfile = app.options.get('pidfile')
+            pid = read_pid(pidfile)
             if self.kill_pid(pid):
                 not_found = False
                 break

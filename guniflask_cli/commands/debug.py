@@ -2,9 +2,8 @@
 
 import os
 
-from guniflask_cli.utils import pid_exists, read_pid
 from guniflask_cli.gunicorn import GunicornApplication
-from .base import Command
+from .base import Command, check_pid
 
 
 class Debug(Command):
@@ -31,9 +30,9 @@ class Debug(Command):
         app = GunicornApplication()
         if args.daemon:
             app.set_option('daemon', True)
-        pid = read_pid(app.options.get('pidfile'))
-        if pid is not None and pid_exists(pid):
-            print('Application is already started')
+
+        pidfile = app.options.get('pidfile')
+        if pidfile and not check_pid(pidfile):
             self.exitcode = 1
         else:
             app.run()

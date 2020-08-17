@@ -30,10 +30,12 @@ class Restart(Command):
         for p in profile_list:
             os.environ['GUNIFLASK_ACTIVE_PROFILES'] = p
             app = GunicornApplication()
-            pid = read_pid(app.options.get('pidfile'))
-            if self.send_hup(pid):
-                not_found = False
-                break
+            pidfile = app.options.get('pidfile')
+            if pidfile:
+                pid = read_pid(pidfile)
+                if self.send_hup(pid):
+                    not_found = False
+                    break
         if not_found:
             print('No application to restart')
             self.exitcode = 1
