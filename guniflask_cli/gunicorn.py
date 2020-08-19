@@ -18,8 +18,8 @@ __all__ = ['GunicornApplication']
 
 class GunicornApplication(Application):
 
-    def __init__(self):
-        self.options: dict = None
+    def __init__(self, **options):
+        self.options: dict = options
         super().__init__()
 
     def set_option(self, key, value):
@@ -27,7 +27,7 @@ class GunicornApplication(Application):
             self.cfg.set(key, value)
 
     def load_config(self):
-        self.options = self._make_options()
+        self.options = self._make_options(self.options)
         for key, value in self.options.items():
             if key in self.cfg.settings and value is not None:
                 self.cfg.set(key.lower(), value)
@@ -46,7 +46,7 @@ class GunicornApplication(Application):
         redirect_app_logger(app, gunicorn_logger)
         return app
 
-    def _make_options(self):
+    def _make_options(self, opt: dict):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']
         log_dir = os.environ['GUNIFLASK_LOG_DIR']
         project_name = get_project_name_from_env()
@@ -63,10 +63,11 @@ class GunicornApplication(Application):
         # if debug
         if os.environ.get('GUNIFLASK_DEBUG'):
             options.update(self._make_debug_options())
-        self._makedirs(options)
+        options.update(opt)
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
             options['pidfile'] = join(pid_dir, '{}-{}.pid'.format(project_name, username))
+        self._makedirs(options)
         # hook wrapper
         HookWrapper.wrap(options)
         return options
