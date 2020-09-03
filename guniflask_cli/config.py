@@ -23,7 +23,11 @@ def load_config(fname, **kwargs) -> dict:
 
 
 def load_profile_config(conf_dir, name, profiles=None, **kwargs) -> dict:
-    pc = load_config(join(conf_dir, name + '.py'), **kwargs)
+    base_file = join(conf_dir, name + '.py')
+    if isfile(base_file):
+        pc = load_config(base_file, **kwargs)
+    else:
+        pc = {}
     if profiles:
         profiles = profiles.split(',')
         for profile in reversed(profiles):

@@ -11,9 +11,7 @@ from gunicorn.app.base import Application
 
 from .config import load_profile_config, load_app_settings
 from .utils import walk_files, redirect_app_logger, redirect_logger
-from .env import get_project_name_from_env
-
-__all__ = ['GunicornApplication']
+from .env import get_project_name_from_env, load_app_env
 
 
 class GunicornApplication(Application):
@@ -36,6 +34,7 @@ class GunicornApplication(Application):
         from guniflask.app import create_app
 
         self._set_default_env()
+        load_app_env()
         app_name = get_project_name_from_env()
         app_settings = load_app_settings(app_name)
 

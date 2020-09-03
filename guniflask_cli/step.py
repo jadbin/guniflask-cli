@@ -5,8 +5,6 @@ import signal
 
 from .utils import readchar
 
-__all__ = ['Step', 'StepChain', 'InputStep', 'ChoiceStep']
-
 
 class Step:
     desc = None

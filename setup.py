@@ -38,7 +38,8 @@ install_requires = [
     'Jinja2>=2.10',
     'SQLAlchemy>=1.3.13',
     'inflect>=4.1.0',
-    'setproctitle>=1.1.10'
+    'setproctitle>=1.1.10',
+    'python-dotenv>=0.14.0'
 ]
 
 

@@ -4,7 +4,7 @@ import os
 
 from guniflask_cli.utils import walk_modules
 from guniflask_cli.errors import UsageError
-from guniflask_cli.env import get_project_name_from_env
+from guniflask_cli.env import get_project_name_from_env, load_app_env
 from guniflask_cli.config import load_app_settings
 from .base import Command
 
@@ -36,6 +36,7 @@ class InitDb(Command):
     def run(self, args):
         from guniflask.app import create_app
 
+        load_app_env()
         project_name = get_project_name_from_env()
         settings = load_app_settings(project_name)
 

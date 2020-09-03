@@ -14,8 +14,6 @@ from sqlalchemy.util import OrderedDict
 from .database_dialect import supported_dialects
 from .utils import string_camelcase, string_lowercase_underscore
 
-__all__ = ['SqlToModelGenerator']
-
 inflect_engine = inflect.engine()
 
 

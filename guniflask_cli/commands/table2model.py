@@ -8,7 +8,7 @@ from sqlalchemy.schema import MetaData
 
 from guniflask_cli.sqlgen import SqlToModelGenerator
 from guniflask_cli.errors import UsageError
-from guniflask_cli.env import get_project_name_from_env
+from guniflask_cli.env import get_project_name_from_env, load_app_env
 from guniflask_cli.config import load_app_settings
 from .base import Command
 
@@ -38,6 +38,7 @@ class TableToModel(Command):
     def run(self, args):
         from guniflask.app import create_app
 
+        load_app_env()
         project_name = get_project_name_from_env()
         settings = load_app_settings(project_name)
 

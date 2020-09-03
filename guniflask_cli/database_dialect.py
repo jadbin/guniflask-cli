@@ -4,8 +4,6 @@ import inspect
 
 import sqlalchemy
 
-__all__ = ['DatabaseDialect', 'supported_dialects']
-
 
 class DatabaseDialect:
     column_types = {}
