@@ -4,7 +4,7 @@ from guniflask.context import configuration
 {%- if authentication_type == 'jwt' %}
 from guniflask.config import settings
 {%- endif %}
-from guniflask.security_config import WebSecurityConfigurer, HttpSecurity, enable_web_security
+from guniflask.security_config enable_web_security, WebSecurityConfigurer, HttpSecurity
 {%- if authentication_type == 'jwt' %}
 
 from .jwt_config import JwtConfigurer

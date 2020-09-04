@@ -4,13 +4,13 @@ import requests
 
 from guniflask.context import configuration, bean
 from guniflask.config import settings
-from guniflask.oauth2_config import enable_resource_server, ResourceServerConfigurerAdapter
+from guniflask.oauth2_config import enable_resource_server, ResourceServerConfigurer
 from guniflask.oauth2 import TokenStore, JwtTokenStore, JwtAccessTokenConverter
 
 
 @configuration
 @enable_resource_server
-class MicroserviceResourceConfiguration(ResourceServerConfigurerAdapter):
+class MicroserviceResourceConfiguration(ResourceServerConfigurer):
 
     def __init__(self):
         self._jwt_access_token_converter = self._get_jwt_access_token_converter()

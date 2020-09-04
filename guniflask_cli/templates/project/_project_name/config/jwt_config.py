@@ -1,12 +1,14 @@
 # coding=utf-8
 
-from guniflask.security_config import SecurityConfigurerAdapter, HttpSecurityBuilder
-from guniflask.security import JwtManager, SecurityContext
+from guniflask.security_config.security_configurer import SecurityConfigurer
+from guniflask.security_config.http_security import HttpSecurityBuilder
+from guniflask.security.jwt_provider import JwtManager
+from guniflask.security.context import SecurityContext
 from guniflask.web import RequestFilter
 from guniflask.oauth2 import BearerTokenExtractor
 
 
-class JwtConfigurer(SecurityConfigurerAdapter):
+class JwtConfigurer(SecurityConfigurer):
     def __init__(self, jwt=None):
         super().__init__()
         self.jwt_filter = None
