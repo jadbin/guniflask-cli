@@ -42,7 +42,7 @@ class TableToModel(Command):
         project_name = get_project_name_from_env()
         settings = load_app_settings(project_name)
 
-        app = create_app(project_name, settings=settings)
+        app = create_app(project_name, settings=settings, with_context=False)
         with app.app_context():
             settings = app.extensions['settings']
             s = app.extensions.get('sqlalchemy')
