@@ -8,7 +8,7 @@ _template_folder = join(dirname(__file__), 'templates')
 
 def load_config(fname, **kwargs) -> dict:
     if fname is None or not isfile(fname):
-        raise FileNotFoundError("Cannot find configuration file '{}'".format(fname))
+        raise FileNotFoundError(f"Cannot find configuration file '{fname}'")
     code = compile(open(fname, 'rb').read(), fname, 'exec')
     cfg = {
         "__builtins__": __builtins__,

@@ -21,7 +21,7 @@ class SqlToModelGenerator:
     def __init__(self, name, metadata, indent=4, bind=None):
         dialect_name = metadata.bind.dialect.name
         if dialect_name not in supported_dialects:
-            raise ValueError('Unsupported dialect: {}'.format(dialect_name))
+            raise ValueError(f'Unsupported dialect: {dialect_name}')
 
         self.dialect = supported_dialects[dialect_name]
         self.name = name
@@ -69,7 +69,7 @@ class SqlToModelGenerator:
         with open(join(path, '__init__.py'), 'w', encoding='utf-8') as f:
             f.write('# coding=utf-8\n\n')
             for m in model_modules:
-                f.write('from .{} import {}\n'.format(m['module'], m['class']))
+                f.write(f'from .{m["module"]} import {m["class"]}\n')
 
     def render_imports(self, model):
         d = OrderedDict()
@@ -81,26 +81,25 @@ class SqlToModelGenerator:
         imports = ''
         for k, v in d.items():
             if isinstance(v, tuple):
-                imports += 'from {} import {} as {}\n'.format(k, v[0], v[1])
+                imports += f'from {k} import {v[0]} as {v[1]}\n'
             else:
-                imports += 'from {} import {}\n'.format(k, v)
+                imports += f'from {k} import {v}\n'
         if len(d) > 0:
             imports += '\n'
-        imports += 'from {} import db\n'.format(self.name)
+        imports += f'from {self.name} import db\n'
         return imports
 
     def render_model(self, model):
-        header_str = 'class {}(BaseModelMixin, db.Model):\n'.format(model.class_name)
-        header_str += "{}__tablename__ = '{}'\n".format(self.indent, model.table.name)
+        header_str = f'class {model.class_name}(BaseModelMixin, db.Model):\n'
+        header_str += f"{self.indent}__tablename__ = '{model.table.name}'\n"
         if self.bind:
-            header_str += "{}__bind_key__ = '{}'\n".format(self.indent, self.bind)
+            header_str += f"{self.indent}__bind_key__ = '{self.bind}'\n"
         header_str += '\n'
         columns_str = ''
         for col in model.table.columns:
             attr = convert_to_valid_identifier(col.name)
             show_name = attr != col.name
-            columns_str += '{}{} = {}\n'.format(self.indent, attr,
-                                                self.render_column(col, show_name=show_name))
+            columns_str += f'{self.indent}{attr} = {self.render_column(col, show_name=show_name)}\n'
         relationships_str = ''
         for r in model.relationships:
             relationships_str += self.indent + self.render_relationship(r) + '\n'
@@ -113,7 +112,7 @@ class SqlToModelGenerator:
     def render_table(self, table):
         columns_str = ',\n'.join(self.indent + self.render_column(col, show_name=True) for col in table.columns)
         tablename = convert_to_valid_identifier(table.name)
-        return '{} = db.Table({!r},\n{}\n)\n'.format(tablename, table.name, columns_str)
+        return f'{tablename} = db.Table({table.name!r},\n{columns_str}\n)\n'
 
     def render_column(self, column, show_name=False):
         is_sole_pk = column.primary_key and len(column.table.primary_key) == 1
@@ -144,18 +143,19 @@ class SqlToModelGenerator:
         if column.server_default:
             default_expr = self.get_compiled_expression(column.server_default.arg)
             if '\n' in default_expr:
-                server_default = 'server_default=text("""\\\n{0}""")'.format(default_expr)
+                server_default = f'server_default=text("""\\\n{default_expr}""")'
             else:
                 default_expr = default_expr.replace('"', '\\"')
-                server_default = 'server_default=_text("{0}")'.format(default_expr)
+                server_default = f'server_default=_text("{default_expr}")'
         extra_kwargs = self.get_extra_column_kwargs(column)
-        return "db.Column({})".format(', '.join(([repr(column.name)] if show_name else []) +
-                                                [self.render_column_type(column.type)] +
-                                                [self.render_constraint(x) for x in dedicated_fks] +
-                                                ['{}={!r}'.format(i, getattr(column, i)) for i in kwargs] +
-                                                ([server_default] if server_default else []) +
-                                                ['{}={}'.format(i, extra_kwargs[i]) for i in
-                                                 sorted(extra_kwargs.keys())]))
+        return "db.Column({})".format(', '.join(
+            ([repr(column.name)] if show_name else []) +
+            [self.render_column_type(column.type)] +
+            [self.render_constraint(x) for x in dedicated_fks] +
+            [f'{i}={getattr(column, i)!r}' for i in kwargs] +
+            ([server_default] if server_default else []) +
+            [f'{i}={extra_kwargs[i]}' for i in sorted(extra_kwargs.keys())])
+        )
 
     def get_extra_column_kwargs(self, column):
         kwargs = {}
@@ -165,7 +165,7 @@ class SqlToModelGenerator:
         return kwargs
 
     def render_column_type(self, coltype):
-        return 'db.{}'.format(self.dialect.convert_column_type(coltype))
+        return f'db.{self.dialect.convert_column_type(coltype)}'
 
     def render_constraint(self, constraint):
         def render_fk_options(*args):
@@ -173,19 +173,19 @@ class SqlToModelGenerator:
             for attr in 'ondelete', 'onupdate':
                 value = getattr(constraint, attr, None)
                 if value:
-                    opts.append('{}={!r}'.format(attr, value))
+                    opts.append(f'{attr}={value!r}')
             return ', '.join(opts)
 
         if isinstance(constraint, ForeignKey):
-            remote_column = '{}.{}'.format(constraint.column.table.name,
-                                           constraint.column.name)
-            return 'db.ForeignKey({})'.format(render_fk_options(remote_column))
+            remote_column = f'{constraint.column.table.name}.{constraint.column.name}'
+            return f'db.ForeignKey({render_fk_options(remote_column)})'
 
     def render_relationship(self, relationship):
-        kwargs_str = ', '.join([repr(table_name_to_class_name(relationship.target_tbl))] +
-                               ['{}={}'.format(i, relationship.kwargs[i]) for i in
-                                sorted(relationship.kwargs.keys())])
-        return '{} = db.relationship({})'.format(relationship.preferred_name, kwargs_str)
+        kwargs_str = ', '.join(
+            [repr(table_name_to_class_name(relationship.target_tbl))] +
+            [f'{i}={relationship.kwargs[i]}' for i in sorted(relationship.kwargs.keys())]
+        )
+        return f'{relationship.preferred_name} = db.relationship({kwargs_str})'
 
     def get_compiled_expression(self, statement):
         return str(statement.compile(
@@ -208,7 +208,7 @@ def table_name_to_class_name(table_name):
 
 def get_constraint_sort_key(constraint):
     if isinstance(constraint, CheckConstraint):
-        return 'C{0}'.format(constraint.sqltext)
+        return f'C{constraint.sqltext}'
     return constraint.__class__.__name__[0] + repr(list(constraint.columns.keys()))
 
 
@@ -261,7 +261,8 @@ class ManyToOneRelationship(Relationship):
         else:
             self.kwargs['lazy'] = repr('joined')
         self.kwargs['backref'] = "db.backref({}, lazy='joined')".format(
-            repr(convert_to_valid_identifier(source_tbl)))
+            repr(convert_to_valid_identifier(source_tbl))
+        )
         self.kwargs['cascade'] = repr('all, delete-orphan')
 
 
@@ -275,7 +276,8 @@ class ManyToManyRelationship(Relationship):
         self.kwargs['secondary'] = convert_to_valid_identifier(association_table.name)
         self.kwargs['lazy'] = repr('select')
         self.kwargs['backref'] = "db.backref({}, lazy='select')".format(
-            repr(inflect_engine.plural(convert_to_valid_identifier(source_tbl))))
+            repr(inflect_engine.plural(convert_to_valid_identifier(source_tbl)))
+        )
 
 
 class ColumnProperty:

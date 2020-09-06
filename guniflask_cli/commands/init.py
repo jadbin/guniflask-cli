@@ -109,7 +109,7 @@ class AuthenticationTypeStep(ChoiceStep):
 class ConflictFileStep(InputStep):
     def __init__(self, file):
         super().__init__()
-        self.title = 'Overwrite {}?'.format(file)
+        self.title = f'Overwrite {file}?'
         self.tooltip = 'Y/n/a/x'
 
     def check_user_input(self, user_input):
@@ -177,7 +177,7 @@ class InitCommand(Command):
                     'cli_version': __version__}
         print(flush=True)
         for cur_step, total_steps, step in step_chain:
-            step.title = '({}/{}) {}'.format(cur_step, total_steps, step.title)
+            step.title = f'({cur_step}/{total_steps}) {step.title}'
             step.process_arguments(settings)
             step.process_user_input()
             step.update_settings(settings)
@@ -192,9 +192,9 @@ class InitCommand(Command):
         settings['guniflask_min_version'] = __version__
         version_info = __version__.split('.')
         if version_info[0] == '0':
-            settings['guniflask_max_version'] = '{}.{}'.format(version_info[0], int(version_info[1]) + 1)
+            settings['guniflask_max_version'] = f'{version_info[0]}.{int(version_info[1]) + 1}'
         else:
-            settings['guniflask_max_version'] = '{}.0'.format(int(version_info[0]) + 1)
+            settings['guniflask_max_version'] = f'{int(version_info[0]) + 1}.0'
 
         print(flush=True)
         self.print_copying_files()
@@ -211,16 +211,16 @@ class InitCommand(Command):
         project_name = settings['project_name']
         # configure files required to ignore
         if settings['authentication_type'] != 'authorization_server':
-            ignore_files.add('{}/config/microservice_config.py'.format(project_name))
+            ignore_files.add(f'{project_name}/config/microservice_config.py')
 
         if settings['authentication_type'] != 'jwt':
-            ignore_files.add('{}/config/jwt_config.py'.format(project_name))
+            ignore_files.add(f'{project_name}/config/jwt_config.py')
         return ignore_files
 
     def make_filename_mapping(self, settings):
         m = {
             '_project_name': settings['project_name'],
-            '_project_name.py': '{}.py'.format(settings['project_name'])
+            '_project_name.py': f'{settings["project_name"]}.py'
         }
         return m
 
@@ -300,10 +300,8 @@ class InitCommand(Command):
 
     @staticmethod
     def print_welcome(project_dir):
-        print('\033[37mWelcome to guniflask-cli generator\033[0m \033[33mv{}\033[0m'
-              .format(__version__), flush=True)
-        print('\033[37mApplication file will be created in folder:\033[0m \033[33m{}\033[0m'
-              .format(project_dir), flush=True)
+        print(f'\033[37mWelcome to guniflask-cli generator\033[0m \033[33mv{__version__}\033[0m', flush=True)
+        print(f'\033[37mApplication file will be created in folder:\033[0m \033[33m{project_dir}\033[0m', flush=True)
 
     @staticmethod
     def print_regenerate_project():
@@ -333,7 +331,7 @@ class InitCommand(Command):
             color = 32
         elif t == 'force' or t == 'skip':
             color = 33
-        print('\033[{}m{:>9}\033[0m {}'.format(color, t, path), flush=True)
+        print(f'\033[{color}m{t:>9}\033[0m {path}', flush=True)
 
 
 def jinja2_env():

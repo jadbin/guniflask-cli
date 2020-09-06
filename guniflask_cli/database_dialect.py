@@ -24,7 +24,7 @@ class DatabaseDialect:
     def convert_column_type(self, coltype):
         coltype_name = coltype.__class__.__name__
         if coltype_name not in self.column_types:
-            raise ValueError('Unsupported column type: {}'.format(coltype_name))
+            raise ValueError(f'Unsupported column type: {coltype_name}')
         column_type = self.column_types[coltype_name]
 
         args = []
@@ -32,7 +32,7 @@ class DatabaseDialect:
         if issubclass(column_type, sqlalchemy.Enum):
             args.extend(repr(arg) for arg in coltype.enums)
             if coltype.name is not None:
-                args.append('name={!r}'.format(coltype.name))
+                args.append(f'name={coltype.name!r}')
         else:
             # All other types
             kwargs = self.get_kwargs_of_column_type(coltype)
@@ -49,12 +49,12 @@ class DatabaseDialect:
                 if value is missing or value == default:
                     use_kwargs = True
                 elif use_kwargs:
-                    args.append('{}={!r}'.format(attr, value))
+                    args.append(f'{attr}={value!r}')
                 else:
                     args.append(repr(value))
         rendered = column_type.__name__
         if args:
-            rendered += '({})'.format(', '.join(args))
+            rendered += f'({", ".join(args)})'
         return rendered
 
 

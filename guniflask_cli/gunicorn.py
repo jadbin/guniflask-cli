@@ -54,8 +54,8 @@ class GunicornApplication(Application):
             'daemon': True,
             'workers': os.cpu_count(),
             'worker_class': 'gevent',
-            'accesslog': join(log_dir, '{}-{}.access.log'.format(project_name, username)),
-            'errorlog': join(log_dir, '{}-{}.error.log'.format(project_name, username)),
+            'accesslog': join(log_dir, f'{project_name}-{username}.access.log'),
+            'errorlog': join(log_dir, f'{project_name}-{username}.error.log'),
             'proc_name': project_name
         }
         options.update(self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES')))
@@ -65,7 +65,7 @@ class GunicornApplication(Application):
         options.update(opt)
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
-            options['pidfile'] = join(pid_dir, '{}-{}.pid'.format(project_name, username))
+            options['pidfile'] = join(pid_dir, f'{project_name}-{username}.pid')
         self._makedirs(options)
         # hook wrapper
         HookWrapper.wrap(options)
@@ -107,7 +107,7 @@ class GunicornApplication(Application):
     def _set_default_env(self):
         bind = self.options.get('bind', '127.0.0.1:8000')
         if not isinstance(bind, str):
-            raise ValueError('Invalid bind: {}'.format(bind))
+            raise ValueError(f'Invalid bind: {bind}')
 
         port = 80
         s = bind.split(':')

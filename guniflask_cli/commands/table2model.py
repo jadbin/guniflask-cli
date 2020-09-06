@@ -55,14 +55,14 @@ class TableToModel(Command):
                 if b is None:
                     default_dest[b] = {'dest': join(project_name, 'models')}
                 else:
-                    default_dest[b] = {'dest': join(project_name, 'models_{}'.format(b))}
+                    default_dest[b] = {'dest': join(project_name, f'models_{b}')}
             dest_config = settings.get_by_prefix('guniflask.table2model_dest', default_dest)
             if isinstance(default_dest, str):
                 default_dest[None]['dest'] = dest_config
             else:
                 for b in dest_config:
                     if b not in default_dest:
-                        raise UsageError('"{}" is not configured in binds'.format(b))
+                        raise UsageError(f'"{b}" is not configured in binds')
                     c = dest_config[b]
                     if isinstance(c, str):
                         default_dest[b]['dest'] = c

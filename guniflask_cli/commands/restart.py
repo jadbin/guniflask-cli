@@ -43,6 +43,6 @@ class Restart(Command):
     def send_hup(self, pid):
         if pid is None or not pid_exists(pid):
             return False
-        print('Sending HUB signal to master (pid: {})'.format(pid))
+        print(f'Sending HUB signal to master (pid: {pid})')
         os.kill(pid, signal.SIGHUP)
         return True

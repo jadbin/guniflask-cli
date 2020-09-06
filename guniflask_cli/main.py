@@ -26,7 +26,7 @@ def _print_commands():
     print("Available commands:")
     cmds = _get_commands_from_module()
     for cmdname, cmdclass in sorted(cmds.items()):
-        print("  {:<14} {}".format(cmdname, cmdclass.short_desc))
+        print(f"  {cmdname:<14} {cmdclass.short_desc}")
     print()
     print('Use "guniflask <command> -h" to see more info about a command')
 
@@ -51,7 +51,7 @@ def main(argv=None):
     del argv[1]
     cmd = cmds[cmdname]
     parser = argparse.ArgumentParser()
-    parser.usage = "guniflask {} {}".format(cmdname, cmd.syntax)
+    parser.usage = f"guniflask {cmdname} {cmd.syntax}"
     parser.description = cmd.long_desc
     cmd.add_arguments(parser)
     try:
@@ -61,7 +61,7 @@ def main(argv=None):
     except UsageError as e:
         if e.print_help:
             parser.print_help(sys.stderr)
-        print('Error: {}'.format(e), file=sys.stderr)
+        print(f'Error: {e}', file=sys.stderr)
         sys.exit(2)
     else:
         if cmd.exitcode:

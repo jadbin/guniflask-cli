@@ -43,7 +43,7 @@ class Stop(Command):
     def kill_pid(self, pid):
         if pid is None or not pid_exists(pid):
             return False
-        print('kill {}'.format(pid))
+        print(f'kill {pid}')
         os.kill(pid, signal.SIGTERM)
         time.sleep(3)
         try:
@@ -52,6 +52,6 @@ class Stop(Command):
             pass
         else:
             print('Application did not stop gracefully after 3 seconds')
-            print('kill -9 {}'.format(pid))
+            print(f'kill -9 {pid}')
             os.kill(pid, signal.SIGKILL)
         return True

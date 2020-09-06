@@ -26,7 +26,7 @@ def set_default_env():
 
 def load_env(fname):
     if fname is None or not isfile(fname):
-        raise FileNotFoundError("Cannot find env file '{}'".format(fname))
+        raise FileNotFoundError(f"Cannot find env file '{fname}'")
     load_dotenv(fname)
 
 
@@ -71,7 +71,7 @@ def infer_project_name(home_dir):
     if len(candidates) == 0:
         return None
     if len(candidates) > 1:
-        raise RuntimeError('Cannot infer the project name, candidates: {}'.format(candidates))
+        raise RuntimeError(f'Cannot infer the project name, candidates: {candidates}')
     return candidates[0]
 
 

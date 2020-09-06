@@ -14,10 +14,10 @@ class VersionCommand(Command):
         return "Print the version"
 
     def run(self, args):
-        print("  guniflask-cli: v{}".format(__version__))
+        print(f"  guniflask-cli: v{__version__}")
         try:
             import guniflask
         except ImportError:
             pass
         else:
-            print("  guniflask: v{}".format(guniflask.__version__))
+            print(f"  guniflask: v{guniflask.__version__}")

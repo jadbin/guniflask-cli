@@ -46,10 +46,10 @@ class Step:
         raise NotImplementedError
 
     def question(self):
-        return '\033[32m?\033[0m {} \033[37m({})\033[0m'.format(self.title, self.tooltip)
+        return f'\033[32m?\033[0m {self.title} \033[37m({self.tooltip})\033[0m'
 
     def decision(self):
-        return '\033[32m?\033[0m {} \033[36m{}\033[0m'.format(self.title, self.value)
+        return f'\033[32m?\033[0m {self.title} \033[36m{self.value}\033[0m'
 
     def go_back_lines(self, n=1):
         return '\033[1A\r\033[K' * n
@@ -139,9 +139,9 @@ class ChoiceStep(Step):
         for i in range(len(self.choices)):
             print(flush=True)
             if i == self.selected:
-                print('\033[36m>\033[0m \033[36m{}\033[0m'.format(self.choices[i]), end='', flush=True)
+                print(f'\033[36m>\033[0m \033[36m{self.choices[i]}\033[0m', end='', flush=True)
             else:
-                print('  {}'.format(self.choices[i]), end='', flush=True)
+                print(f'  {self.choices[i]}', end='', flush=True)
         self.hide_cursor()
 
     def get_user_input(self):

@@ -24,8 +24,7 @@ def init_project(proj_dir):
     }
     with open(join(proj_dir, '.guniflask-init.json'), 'w') as f:
         json.dump(settings, f)
-    res = subprocess.run("cd '{}' && guniflask init".format(proj_dir),
-                         shell=True)
+    res = subprocess.run(f"cd '{proj_dir}' && guniflask init", shell=True)
     assert res.returncode == 0
 
 

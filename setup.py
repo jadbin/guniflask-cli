@@ -32,7 +32,7 @@ class PyTest(TestCommand):
 tests_require = read_requirements('test.txt')
 version = read_version()
 install_requires = [
-    'guniflask=={}'.format(version),
+    f'guniflask=={version}',
     'gunicorn>=20.0.4',
     'gevent>=1.4.0',
     'Jinja2>=2.10',
