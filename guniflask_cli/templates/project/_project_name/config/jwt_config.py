@@ -1,11 +1,13 @@
 # coding=utf-8
 
-from guniflask.security_config.security_configurer import SecurityConfigurer
-from guniflask.security_config.http_security import HttpSecurityBuilder
-from guniflask.security.jwt_provider import JwtManager
-from guniflask.security.context import SecurityContext
+from werkzeug.local import LocalProxy
+from guniflask.security_config import SecurityConfigurer, HttpSecurityBuilder
+from guniflask.security import JwtManager, SecurityContext
 from guniflask.web import RequestFilter
 from guniflask.oauth2 import BearerTokenExtractor
+from guniflask.config import settings
+
+jwt_manager = LocalProxy(lambda: settings['jwt_manager'])
 
 
 class JwtConfigurer(SecurityConfigurer):
@@ -14,6 +16,7 @@ class JwtConfigurer(SecurityConfigurer):
         self.jwt_filter = None
         if isinstance(jwt, dict):
             jwt_manager = JwtManager(**jwt)
+            settings['jwt_manager'] = jwt_manager
             self.jwt_filter = JwtFilter(jwt_manager)
 
     def configure(self, http: HttpSecurityBuilder):
