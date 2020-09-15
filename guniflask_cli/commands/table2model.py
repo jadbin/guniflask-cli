@@ -57,7 +57,7 @@ class TableToModel(Command):
                 else:
                     default_dest[b] = {'dest': join(project_name, f'models_{b}')}
             dest_config = settings.get_by_prefix('guniflask.table2model_dest', default_dest)
-            if isinstance(default_dest, str):
+            if isinstance(dest_config, str):
                 default_dest[None]['dest'] = dest_config
             else:
                 for b in dest_config:
