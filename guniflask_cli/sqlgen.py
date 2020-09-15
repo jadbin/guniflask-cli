@@ -5,13 +5,13 @@ from os.path import join, exists
 from collections import defaultdict
 from keyword import iskeyword
 import re
+import inspect
 
 import sqlalchemy
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint, CheckConstraint, ForeignKey
 import inflect
 from sqlalchemy.util import OrderedDict
 
-from .database_dialect import supported_dialects
 from .utils import string_camelcase, string_lowercase_underscore
 
 inflect_engine = inflect.engine()
@@ -19,11 +19,6 @@ inflect_engine = inflect.engine()
 
 class SqlToModelGenerator:
     def __init__(self, name, metadata, indent=4, bind=None):
-        dialect_name = metadata.bind.dialect.name
-        if dialect_name not in supported_dialects:
-            raise ValueError(f'Unsupported dialect: {dialect_name}')
-
-        self.dialect = supported_dialects[dialect_name]
         self.name = name
         self.metadata = metadata
         self.indent = ' ' * indent
@@ -165,7 +160,36 @@ class SqlToModelGenerator:
         return kwargs
 
     def render_column_type(self, coltype):
-        return f'db.{self.dialect.convert_column_type(coltype)}'
+        argspec = inspect.getfullargspec(coltype.__class__.__init__)
+        defaults = dict(zip(argspec.args[-len(argspec.defaults or ()):],
+                            argspec.defaults or ()))
+        args = []
+        kwargs = OrderedDict()
+        use_kwargs = False
+        missing = object()
+        for attr in argspec.args[1:]:
+            if attr.startswith('_'):
+                continue
+
+            value = getattr(coltype, attr, missing)
+            default = defaults.get(attr, missing)
+            if value is missing or value == default:
+                use_kwargs = True
+            elif use_kwargs:
+                kwargs[attr] = repr(value)
+            else:
+                args.append(repr(value))
+
+        if isinstance(coltype, sqlalchemy.Enum) and coltype.name is not None:
+            kwargs['name'] = repr(coltype.name)
+
+        for key, value in kwargs.items():
+            args.append('{}={}'.format(key, value))
+
+        rendered = f'db.{coltype.__class__.__name__}'
+        if args:
+            rendered += f'({", ".join(args)})'
+        return rendered
 
     def render_constraint(self, constraint):
         def render_fk_options(*args):

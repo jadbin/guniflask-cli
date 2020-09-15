@@ -44,7 +44,7 @@ class TableToModel(Command):
 
         app = create_app(project_name, settings=settings, with_context=False)
         with app.app_context():
-            settings = app.extensions['settings']
+            settings = app.settings
             s = app.extensions.get('sqlalchemy')
             if not s:
                 raise UsageError('Not found SQLAlchemy')
