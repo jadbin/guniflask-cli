@@ -1,10 +1,8 @@
 # coding=utf-8
 
 import os
-from os.path import join, exists
+from os.path import join
 import subprocess
-import time
-from threading import Thread
 import json
 
 from guniflask_cli import __version__
