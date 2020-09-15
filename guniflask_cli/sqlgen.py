@@ -6,6 +6,7 @@ from collections import defaultdict
 from keyword import iskeyword
 import re
 import inspect
+from typing import Any, Union
 
 import sqlalchemy
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint, CheckConstraint, ForeignKey
@@ -67,19 +68,22 @@ class SqlToModelGenerator:
                 f.write(f'from .{m["module"]} import {m["class"]}\n')
 
     def render_imports(self, model):
-        d = OrderedDict()
-        d.setdefault('guniflask.orm', 'BaseModelMixin')
+        collector = ImportCollector()
+        collector.add_import('BaseModelMixin', 'guniflask.orm')
+
         for col in model.table.columns:
             if col.server_default:
-                d.setdefault('sqlalchemy', ('text', '_text'))
+                collector.add_import(('text', '_text'), 'sqlalchemy')
+            collector.add_import(col.type)
 
         imports = ''
-        for k, v in d.items():
-            if isinstance(v, tuple):
-                imports += f'from {k} import {v[0]} as {v[1]}\n'
-            else:
-                imports += f'from {k} import {v}\n'
-        if len(d) > 0:
+        for k, vlist in collector.items():
+            for v in vlist:
+                if isinstance(v, tuple):
+                    imports += f'from {k} import {v[0]} as {v[1]}\n'
+                else:
+                    imports += f'from {k} import {v}\n'
+        if len(collector) > 0:
             imports += '\n'
         imports += f'from {self.name} import db\n'
         return imports
@@ -138,7 +142,7 @@ class SqlToModelGenerator:
         if column.server_default:
             default_expr = self.get_compiled_expression(column.server_default.arg)
             if '\n' in default_expr:
-                server_default = f'server_default=text("""\\\n{default_expr}""")'
+                server_default = f'server_default=_text("""\\\n{default_expr}""")'
             else:
                 default_expr = default_expr.replace('"', '\\"')
                 server_default = f'server_default=_text("{default_expr}")'
@@ -167,6 +171,7 @@ class SqlToModelGenerator:
         kwargs = OrderedDict()
         use_kwargs = False
         missing = object()
+
         for attr in argspec.args[1:]:
             if attr.startswith('_'):
                 continue
@@ -186,7 +191,7 @@ class SqlToModelGenerator:
         for key, value in kwargs.items():
             args.append('{}={}'.format(key, value))
 
-        rendered = f'db.{coltype.__class__.__name__}'
+        rendered = coltype.__class__.__name__
         if args:
             rendered += f'({", ".join(args)})'
         return rendered
@@ -334,3 +339,16 @@ class UpdatedTimeProperty(ColumnProperty):
 
 
 supported_column_properties = [CreatedTimeProperty(), UpdatedTimeProperty()]
+
+
+class ImportCollector(OrderedDict):
+    def add_import(self, name: Any, pkg: Union[str, tuple] = None):
+        if not isinstance(name, (str, tuple)):
+            if inspect.isclass(name):
+                obj_type = name
+            else:
+                obj_type = type(name)
+            pkg = obj_type.__module__
+            name = obj_type.__name__
+        names = self.setdefault(pkg, set())
+        names.add(name)
