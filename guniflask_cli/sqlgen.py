@@ -146,22 +146,15 @@ class SqlToModelGenerator:
             else:
                 default_expr = default_expr.replace('"', '\\"')
                 server_default = f'server_default=_text("{default_expr}")'
-        extra_kwargs = self.get_extra_column_kwargs(column)
-        return "db.Column({})".format(', '.join(
-            ([repr(column.name)] if show_name else []) +
-            [self.render_column_type(column.type)] +
-            [self.render_constraint(x) for x in dedicated_fks] +
-            [f'{i}={getattr(column, i)!r}' for i in kwargs] +
-            ([server_default] if server_default else []) +
-            [f'{i}={extra_kwargs[i]}' for i in sorted(extra_kwargs.keys())])
+        return "db.Column({})".format(
+            ', '.join(
+                ([repr(column.name)] if show_name else []) +
+                [self.render_column_type(column.type)] +
+                [self.render_constraint(x) for x in dedicated_fks] +
+                [f'{i}={getattr(column, i)!r}' for i in kwargs] +
+                ([server_default] if server_default else [])
+            )
         )
-
-    def get_extra_column_kwargs(self, column):
-        kwargs = {}
-        for p in supported_column_properties:
-            if p.match_column(column):
-                kwargs.update(p.kwargs)
-        return kwargs
 
     def render_column_type(self, coltype):
         argspec = inspect.getfullargspec(coltype.__class__.__init__)
@@ -315,30 +308,6 @@ class ColumnProperty:
 
     def match_column(self, column):
         raise NotImplementedError
-
-
-class CreatedTimeProperty(ColumnProperty):
-    def __init__(self):
-        super().__init__()
-        self.kwargs['default'] = 'db.func.now()'
-        self.reg = re.compile(r'^create[d]?_(time|at)$')
-
-    def match_column(self, column):
-        return isinstance(column.type, sqlalchemy.DateTime) and self.reg.match(column.name.lower()) is not None
-
-
-class UpdatedTimeProperty(ColumnProperty):
-    def __init__(self):
-        super().__init__()
-        self.kwargs['default'] = 'db.func.now()'
-        self.kwargs['onupdate'] = 'db.func.now()'
-        self.reg = re.compile(r'^update[d]?_(time|at)$')
-
-    def match_column(self, column):
-        return isinstance(column.type, sqlalchemy.DateTime) and self.reg.match(column.name.lower()) is not None
-
-
-supported_column_properties = [CreatedTimeProperty(), UpdatedTimeProperty()]
 
 
 class ImportCollector(OrderedDict):
