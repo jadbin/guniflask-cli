@@ -1,6 +1,9 @@
 dist: focal
 os: linux
 language: python
+branches:
+  only:
+    - master
 jobs:
   include:
     - python: 3.6
@@ -12,7 +15,11 @@ jobs:
 cache:
   directories:
     - $HOME/.cache/pip
+before_install:
+  - wget https://github.com/jadbin/guniflask/archive/master.zip
+  - unzip master.zip
 install:
+  - pip install -e guniflask-master
   - pip install tox coveralls
 script:
   - tox --recreate
