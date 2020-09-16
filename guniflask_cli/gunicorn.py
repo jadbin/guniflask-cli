@@ -62,7 +62,7 @@ class GunicornApplication(Application):
         profile_options = self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES'))
         if 'worker_class' in profile_options and profile_options['worker_class'] != options['worker_class']:
             raise ValueError(f'worker_class cannot be set to: {profile_options["worker_class"]}')
-        options.update()
+        options.update(profile_options)
         # if debug
         if os.environ.get('GUNIFLASK_DEBUG'):
             options.update(self._make_debug_options())
