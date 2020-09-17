@@ -4,7 +4,6 @@ import os
 from os.path import join, exists
 from collections import defaultdict
 from keyword import iskeyword
-import re
 import inspect
 from typing import Any, Union
 
