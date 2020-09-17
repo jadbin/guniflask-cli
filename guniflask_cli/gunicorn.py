@@ -54,7 +54,7 @@ class GunicornApplication(Application):
         options = {
             'daemon': True,
             'workers': os.cpu_count(),
-            'worker_class': 'uvicorn.workers.UvicornWorker',
+            'worker_class': 'guniflask_cli.workers.UvicornWorker',
             'accesslog': join(log_dir, f'{project_name}-{username}.access.log'),
             'errorlog': join(log_dir, f'{project_name}-{username}.error.log'),
             'proc_name': project_name
