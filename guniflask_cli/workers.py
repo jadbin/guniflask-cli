@@ -81,7 +81,3 @@ class UvicornWorker(Worker):
                 self.alive = False
             if not self.alive:
                 self.server.should_exit = True
-
-
-class UvicornH11Worker(UvicornWorker):
-    CONFIG_KWARGS = {"loop": "asyncio", "http": "h11"}
