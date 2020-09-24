@@ -3,4 +3,5 @@
 bin=$(dirname ${BASH_SOURCE[0]})
 bin=$(cd "$bin"; pwd)
 
-guniflask $@
+home=$(dirname "$bin")
+cd "$home" && guniflask $@
