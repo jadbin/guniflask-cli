@@ -65,7 +65,7 @@ class GunicornApplication(Application):
         options.update(profile_options)
         # if debug
         if os.environ.get('GUNIFLASK_DEBUG'):
-            options.update(self._make_debug_options())
+            self._update_debug_options(options)
         options.update(opt)
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
@@ -86,18 +86,20 @@ class GunicornApplication(Application):
         return settings
 
     @staticmethod
-    def _make_debug_options():
+    def _update_debug_options(options: dict):
         conf_dir = os.environ['GUNIFLASK_CONF_DIR']
-        return {
+        opt = {
             'accesslog': '-',
             'errorlog': '-',
             'loglevel': 'debug',
-            'disable_redirect_access_to_syslog': True,
             'reload': True,
             'reload_extra_files': walk_files(conf_dir),
             'workers': 1,
             'daemon': False
         }
+        if 'reload_extra_files' in options:
+            opt['reload_extra_files'].extend(options['reload_extra_files'])
+        options.update(opt)
 
     @staticmethod
     def _makedirs(opts):
