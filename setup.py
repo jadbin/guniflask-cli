@@ -34,6 +34,7 @@ version = read_version()
 install_requires = [
     f'guniflask=={version}',
     'gunicorn>=20.0.4',
+    'gevent>=1.4.0',
     'Jinja2>=2.10',
     'SQLAlchemy>=1.3.13',
     'inflect>=4.1.0',

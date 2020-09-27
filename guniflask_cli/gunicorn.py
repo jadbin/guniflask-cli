@@ -44,7 +44,9 @@ class GunicornApplication(Application):
         app = create_app(app_name, settings=app_settings)
         redirect_app_logger(app, gunicorn_logger)
 
-        return app.asgi_app
+        if hasattr(app, 'asgi_app'):
+            return app.asgi_app
+        return app
 
     def _make_options(self, opt: dict):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']
@@ -54,14 +56,12 @@ class GunicornApplication(Application):
         options = {
             'daemon': True,
             'workers': os.cpu_count(),
-            'worker_class': 'guniflask_cli.workers.UvicornWorker',
+            'worker_class': 'gevent',
             'accesslog': join(log_dir, f'{project_name}-{username}.access.log'),
             'errorlog': join(log_dir, f'{project_name}-{username}.error.log'),
             'proc_name': project_name
         }
         profile_options = self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES'))
-        if 'worker_class' in profile_options and profile_options['worker_class'] != options['worker_class']:
-            raise ValueError(f'worker_class cannot be set to: {profile_options["worker_class"]}')
         options.update(profile_options)
         # if debug
         if os.environ.get('GUNIFLASK_DEBUG'):
@@ -83,6 +83,9 @@ class GunicornApplication(Application):
         for name in gc:
             if name in snames:
                 settings[name] = gc[name]
+        if 'worker_class' in settings:
+            if settings['worker_class'] == 'uvicorn':
+                settings['worker_class'] = 'guniflask_cli.workers.UvicornWorker'
         return settings
 
     @staticmethod
