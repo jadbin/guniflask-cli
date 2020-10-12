@@ -40,7 +40,7 @@ install_requires = [
     'inflect>=4.1.0',
     'setproctitle>=1.1.10',
     'python-dotenv>=0.14.0',
-    'uvicorn>=0.11.8',
+    'uvicorn[standard]>=0.11.8',
 ]
 
 
