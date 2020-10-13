@@ -18,6 +18,7 @@ class GunicornApplication(Application):
 
     def __init__(self, **options):
         self.options: dict = options
+        self.asgi = False
         super().__init__()
 
     def set_option(self, key, value):
@@ -44,7 +45,7 @@ class GunicornApplication(Application):
         app = create_app(app_name, settings=app_settings)
         redirect_app_logger(app, gunicorn_logger)
 
-        if hasattr(app, 'asgi_app'):
+        if self.asgi:
             return app.asgi_app
         return app
 
@@ -69,8 +70,13 @@ class GunicornApplication(Application):
         options.update(opt)
         # worker class
         if 'worker_class' in options:
-            if options['worker_class'] == 'uvicorn':
-                options['worker_class'] = 'guniflask_cli.workers.UvicornWorker'
+            worker_class = options['worker_class']
+            if isinstance(worker_class, str) and worker_class.startswith('asgi:'):
+                self.asgi = True
+                worker_class = worker_class[5:]
+            if worker_class == 'uvicorn':
+                worker_class = 'guniflask_cli.workers.UvicornWorker'
+            options['worker_class'] = worker_class
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
             options['pidfile'] = join(pid_dir, f'{project_name}-{username}.pid')
