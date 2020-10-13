@@ -67,6 +67,10 @@ class GunicornApplication(Application):
         if os.environ.get('GUNIFLASK_DEBUG'):
             self._update_debug_options(options)
         options.update(opt)
+        # worker class
+        if 'worker_class' in options:
+            if options['worker_class'] == 'uvicorn':
+                options['worker_class'] = 'guniflask_cli.workers.UvicornWorker'
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
             options['pidfile'] = join(pid_dir, f'{project_name}-{username}.pid')
@@ -83,9 +87,6 @@ class GunicornApplication(Application):
         for name in gc:
             if name in snames:
                 settings[name] = gc[name]
-        if 'worker_class' in settings:
-            if settings['worker_class'] == 'uvicorn':
-                settings['worker_class'] = 'guniflask_cli.workers.UvicornWorker'
         return settings
 
     @staticmethod
