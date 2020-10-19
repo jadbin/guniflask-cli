@@ -1,8 +1,5 @@
 # coding=utf-8
 
-import sys
-import tty
-import termios
 import os
 from os.path import isfile, join, isdir
 from importlib import import_module
@@ -11,17 +8,6 @@ import re
 import logging
 
 from flask import Flask
-
-
-def readchar():  # pragma: no cover
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
 
 
 def walk_modules(path: str):

@@ -4,126 +4,18 @@ import os
 from os.path import exists, join, abspath, isdir, basename, dirname, relpath
 from shutil import ignore_patterns
 import json
+import re
 
+import inquirer
+from inquirer.themes import GreenPassion
+from inquirer.errors import ValidationError
 from jinja2 import Environment
 
 from guniflask_cli.errors import AbortedError, TemplateError
 from guniflask_cli.utils import string_lowercase_underscore
 from guniflask_cli.config import _template_folder
-from guniflask_cli.step import InputStep, ChoiceStep, StepChain
 from guniflask_cli import __version__
 from .base import Command
-
-
-class BaseNameStep(InputStep):
-    desc = 'What is the base name of your application?'
-
-    def process_arguments(self, settings):
-        old_settings = settings['old_settings']
-        if old_settings and 'project_name' in old_settings:
-            self.tooltip = old_settings['project_name']
-        else:
-            project_dir = settings['project_dir']
-            self.tooltip = string_lowercase_underscore(basename(project_dir))
-
-    def check_user_input(self, user_input):
-        project_basename = string_lowercase_underscore(user_input)
-        if not project_basename:
-            project_basename = self.tooltip
-        if project_basename and not str.isdigit(project_basename[0]):
-            self.value = project_basename
-            return True
-        return False
-
-    def show_invalid_tooltip(self):
-        print('\033[31m>>\033[0m Please input a valid project name', end='', flush=True)
-        super().show_invalid_tooltip()
-
-    def update_settings(self, settings):
-        settings['project_name'] = self.value
-
-
-class PortStep(InputStep):
-    desc = 'Would you like to run your application on which port?'
-
-    def process_arguments(self, settings):
-        old_settings = settings['old_settings']
-        if old_settings and 'port' in old_settings:
-            self.tooltip = old_settings['port']
-        else:
-            self.tooltip = 8000
-
-    def check_user_input(self, user_input):
-        user_input = user_input.strip()
-        if user_input:
-            port = self.parse_port(user_input)
-        else:
-            port = self.parse_port(self.tooltip)
-        if port is not None:
-            self.value = port
-            return True
-        return False
-
-    def show_invalid_tooltip(self):
-        print('\033[31m>>\033[0m Please input a valid port (0 ~ 65535)', end='', flush=True)
-        super().show_invalid_tooltip()
-
-    def update_settings(self, settings):
-        settings['port'] = self.value
-
-    @staticmethod
-    def parse_port(port):
-        try:
-            res = int(port)
-        except (ValueError, TypeError):
-            pass
-        else:
-            if 0 <= res < 65536:
-                return res
-
-
-class AuthenticationTypeStep(ChoiceStep):
-    desc = 'Which type of authentication would you like to use?'
-
-    def __init__(self):
-        super().__init__()
-        self.tooltip = 'Use arrow keys'
-        self.add_choice('No authentication', None)
-        self.add_choice('JWT authentication', 'jwt')
-        self.add_choice('Authentication with authorization server', 'authorization_server')
-
-    def process_arguments(self, settings):
-        old_settings = settings['old_settings']
-        if old_settings and 'authentication_type' in old_settings:
-            self.selected_value = old_settings['authentication_type']
-
-    def update_settings(self, settings):
-        security = self.selected_value
-        settings['authentication_type'] = security
-        if self.selected_value == 'jwt':
-            from guniflask.security.jwt import JwtHelper
-
-            settings['jwt_secret'] = JwtHelper.generate_jwt_secret()
-
-
-class ConflictFileStep(InputStep):
-    def __init__(self, file):
-        super().__init__()
-        self.title = f'Overwrite {file}?'
-        self.tooltip = 'Y/n/a/x'
-
-    def check_user_input(self, user_input):
-        user_input = user_input.strip().lower()
-        if not user_input:
-            user_input = 'y'
-        if len(user_input) > 1 or user_input not in 'ynax':
-            return False
-        self.value = user_input
-        return True
-
-    def show_invalid_tooltip(self):
-        print('\033[31m>>\033[0m Please enter a valid command', end='', flush=True)
-        super().show_invalid_tooltip()
 
 
 class InitCommand(Command):
@@ -150,7 +42,7 @@ class InitCommand(Command):
         self.print_welcome(project_dir)
         try:
             init_json_file = join(project_dir, '.guniflask-init.json')
-            old_settings = None
+            old_settings = {}
             try:
                 with open(init_json_file, 'r', encoding='utf-8') as f:
                     old_settings = json.load(f)
@@ -168,23 +60,64 @@ class InitCommand(Command):
             self.print_aborted_error()
             self.exitcode = 1
 
-    def get_settings_by_steps(self, project_dir, old_settings=None):
-        step_chain = StepChain(AuthenticationTypeStep()) \
-            .previous(PortStep()) \
-            .previous(BaseNameStep())
-        settings = {'project_dir': project_dir,
-                    'old_settings': old_settings,
-                    'cli_version': __version__}
-        print(flush=True)
-        for cur_step, total_steps, step in step_chain:
-            step.title = f'({cur_step}/{total_steps}) {step.title}'
-            step.process_arguments(settings)
-            step.process_user_input()
-            step.update_settings(settings)
-            cur_step += 1
-        del settings['project_dir']
-        del settings['old_settings']
+    def get_settings_by_steps(self, project_dir: str, old_settings: dict = None):
+        default_base_name = old_settings.get(
+            'project_name',
+            string_lowercase_underscore(basename(project_dir)),
+        )
+        default_authentication_type = old_settings.get('authentication_type')
+        default_port = old_settings.get('port', 8000)
+        questions = [
+            inquirer.Text(
+                'project_name',
+                message='What is the base name of your application?',
+                default=default_base_name,
+                validate=self.validate_app_name,
+            ),
+            inquirer.Text(
+                'port',
+                message='Would you like to run your application on which port?',
+                default=default_port,
+                validate=self.validate_port,
+            ),
+            inquirer.List(
+                'authentication_type',
+                message='Which type of authentication would you like to use?',
+                choices=[
+                    ('No authentication', None),
+                    ('JWT authentication', 'jwt'),
+                    ('Authentication with authorization server', 'authorization_server'),
+                ],
+                default=default_authentication_type,
+            ),
+        ]
+        answers = inquirer.prompt(questions, theme=GreenPassion(), raise_keyboard_interrupt=True)
+        settings = {
+            'cli_version': __version__,
+        }
+        settings.update(answers)
+        if settings.get('authentication_type') == 'jwt':
+            from guniflask.security.jwt import JwtHelper
+            settings['jwt_secret'] = JwtHelper.generate_jwt_secret()
         return settings
+
+    @staticmethod
+    def validate_app_name(answers, current):
+        if current and re.match(r'^[0-9a-zA-Z_]+$', current) and not str.isdigit(current[0]):
+            return True
+        raise ValidationError(
+            '',
+            reason='Please input a base name' if not current else f'"{current}" is not a valid base name'
+        )
+
+    @staticmethod
+    def validate_port(answers, current):
+        if current and re.match(r'^[0-9]+$', current):
+            return True
+        raise ValidationError(
+            '',
+            reason='Please input a port' if not current else f'"{current}" is not a valid port'
+        )
 
     def copy_files(self, project_dir, settings):
         settings = dict(settings)
@@ -196,7 +129,6 @@ class InitCommand(Command):
         else:
             settings['guniflask_max_version'] = f'{int(version_info[0]) + 1}.0'
 
-        print(flush=True)
         self.print_copying_files()
         self.force = False
         self.ignore_files = self.resolve_ignore_files(settings)
@@ -254,10 +186,11 @@ class InitCommand(Command):
                             self.write_file(dst_path, content)
                         else:
                             self.print_copying_file('conflict', dst_rel_path)
-                            cf_step = ConflictFileStep(dst_rel_path)
-                            cf_step.process_user_input()
-                            user_input = cf_step.value
-                            if user_input == 'y' or user_input == 'a':
+                            user_input = inquirer.text(
+                                message=f'Overwrite {dst_rel_path}? (Y/n/a/x)',
+                                validate=self.validate_conflict_command,
+                            )
+                            if not user_input or user_input == 'y' or user_input == 'a':
                                 self.print_copying_file('force', dst_rel_path)
                                 self.write_file(dst_path, content)
                                 if user_input == 'a':
@@ -332,6 +265,15 @@ class InitCommand(Command):
         elif t == 'force' or t == 'skip':
             color = 33
         print(f'\033[{color}m{t:>9}\033[0m {path}', flush=True)
+
+    @staticmethod
+    def validate_conflict_command(answers, current):
+        if current and current not in 'ynax':
+            raise ValidationError(
+                '',
+                reason=f'"{current}" is not a valid command'
+            )
+        return True
 
 
 def jinja2_env():
