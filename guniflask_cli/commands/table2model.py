@@ -1,15 +1,15 @@
 # coding=utf-8
 
 import os
-from os.path import join
 from collections import defaultdict
+from os.path import join
 
+from guniflask_cli.config import load_app_settings
+from guniflask_cli.env import get_project_name_from_env, load_app_env
+from guniflask_cli.errors import UsageError
+from guniflask_cli.sqlgen import SqlToModelGenerator
 from sqlalchemy.schema import MetaData
 
-from guniflask_cli.sqlgen import SqlToModelGenerator
-from guniflask_cli.errors import UsageError
-from guniflask_cli.env import get_project_name_from_env, load_app_env
-from guniflask_cli.config import load_app_settings
 from .base import Command
 
 

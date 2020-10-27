@@ -1,13 +1,13 @@
 # coding=utf-8
 
-import sys
 import argparse
 import inspect
+import sys
 
 from .commands.base import Command
+from .env import set_default_env
 from .errors import UsageError
 from .utils import walk_modules
-from .env import set_default_env
 
 
 def _get_commands_from_module():

@@ -1,10 +1,10 @@
 # coding=utf-8
 
+import json
 import os
+import re
 import sys
 from os.path import join, isfile, isdir
-import re
-import json
 
 from dotenv import load_dotenv
 

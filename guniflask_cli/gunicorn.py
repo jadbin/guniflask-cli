@@ -1,17 +1,17 @@
 # coding=utf-8
 
-import os
-from os.path import join, dirname, exists
-from functools import partial
-import logging
 import getpass
+import logging
+import os
+from functools import partial
+from os.path import join, dirname, exists
 
-from gunicorn.config import KNOWN_SETTINGS
 from gunicorn.app.base import Application
+from gunicorn.config import KNOWN_SETTINGS
 
 from .config import load_profile_config, load_app_settings
-from .utils import walk_files, redirect_app_logger, redirect_logger
 from .env import get_project_name_from_env, load_app_env
+from .utils import walk_files, redirect_app_logger, redirect_logger
 
 
 class GunicornApplication(Application):

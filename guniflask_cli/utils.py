@@ -1,11 +1,11 @@
 # coding=utf-8
 
-import os
-from os.path import isfile, join, isdir
-from importlib import import_module
-from pkgutil import iter_modules
-import re
 import logging
+import os
+import re
+from importlib import import_module
+from os.path import isfile, join, isdir
+from pkgutil import iter_modules
 
 from flask import Flask
 

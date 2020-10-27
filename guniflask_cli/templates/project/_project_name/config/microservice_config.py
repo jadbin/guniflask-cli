@@ -1,11 +1,10 @@
 # coding=utf-8
 
 import requests
-
-from guniflask.context import configuration, bean
 from guniflask.config import settings
-from guniflask.oauth2_config import enable_resource_server, ResourceServerConfigurer
+from guniflask.context import configuration, bean
 from guniflask.oauth2 import TokenStore, JwtTokenStore, JwtAccessTokenConverter
+from guniflask.oauth2_config import enable_resource_server, ResourceServerConfigurer
 
 
 @configuration

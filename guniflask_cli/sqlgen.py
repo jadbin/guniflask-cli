@@ -1,15 +1,15 @@
 # coding=utf-8
 
+import inspect
 import os
-from os.path import join, exists
 from collections import defaultdict
 from keyword import iskeyword
-import inspect
+from os.path import join, exists
 from typing import Any, Union
 
+import inflect
 import sqlalchemy
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint, CheckConstraint, ForeignKey
-import inflect
 from sqlalchemy.util import OrderedDict
 
 from .utils import string_camelcase, string_lowercase_underscore

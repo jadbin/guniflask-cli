@@ -1,11 +1,11 @@
 # coding=utf-8
 
-from werkzeug.local import LocalProxy
-from guniflask.security_config import SecurityConfigurer, HttpSecurityBuilder
-from guniflask.security import JwtManager, SecurityContext
-from guniflask.web import RequestFilter
-from guniflask.oauth2 import BearerTokenExtractor
 from guniflask.config import settings
+from guniflask.oauth2 import BearerTokenExtractor
+from guniflask.security import JwtManager, SecurityContext
+from guniflask.security_config import SecurityConfigurer, HttpSecurityBuilder
+from guniflask.web import RequestFilter
+from werkzeug.local import LocalProxy
 
 jwt_manager = LocalProxy(lambda: settings['jwt_manager'])
 
