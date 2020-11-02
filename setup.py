@@ -38,7 +38,6 @@ install_requires = [
     'Jinja2>=2.10',
     'inflect>=4.1.0',
     'setproctitle>=1.1.10',
-    'python-dotenv>=0.14.0',
     'inquirer>=2.7.0',
 ]
 
