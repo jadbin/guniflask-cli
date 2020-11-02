@@ -4,12 +4,11 @@ import os
 from collections import defaultdict
 from os.path import join
 
-from guniflask_cli.config import load_app_settings
-from guniflask_cli.env import get_project_name_from_env, load_app_env
-from guniflask_cli.errors import UsageError
-from guniflask_cli.sqlgen import SqlToModelGenerator
+from guniflask.config import load_app_env
 from sqlalchemy.schema import MetaData
 
+from guniflask_cli.errors import UsageError
+from guniflask_cli.sqlgen import SqlToModelGenerator
 from .base import Command
 
 
@@ -39,10 +38,7 @@ class TableToModel(Command):
         from guniflask.app import create_app
 
         load_app_env()
-        project_name = get_project_name_from_env()
-        settings = load_app_settings(project_name)
-
-        app = create_app(project_name, settings=settings, with_context=False)
+        app = create_app()
         with app.app_context():
             settings = app.settings
             s = app.extensions.get('sqlalchemy')

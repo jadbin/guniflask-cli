@@ -8,9 +8,9 @@ from os.path import join, dirname, exists
 
 from gunicorn.app.base import Application
 from gunicorn.config import KNOWN_SETTINGS
+from guniflask.config import app_name_from_env, load_app_env
+from guniflask.config import load_profile_config
 
-from .config import load_profile_config, load_app_settings
-from .env import get_project_name_from_env, load_app_env
 from .utils import walk_files, redirect_app_logger, redirect_logger
 
 
@@ -35,13 +35,11 @@ class GunicornApplication(Application):
 
         self._set_default_env()
         load_app_env()
-        app_name = get_project_name_from_env()
-        app_settings = load_app_settings(app_name)
+        app = create_app()
 
         gunicorn_logger = logging.getLogger('gunicorn.error')
         redirect_logger('guniflask', gunicorn_logger)
-        redirect_logger(app_name, gunicorn_logger)
-        app = create_app(app_name, settings=app_settings)
+        redirect_logger(app.name, gunicorn_logger)
         redirect_app_logger(app, gunicorn_logger)
 
         return app
@@ -49,7 +47,7 @@ class GunicornApplication(Application):
     def _make_options(self, opt: dict):
         pid_dir = os.environ['GUNIFLASK_PID_DIR']
         log_dir = os.environ['GUNIFLASK_LOG_DIR']
-        project_name = get_project_name_from_env()
+        project_name = app_name_from_env()
         username = getpass.getuser()
         options = {
             'daemon': True,

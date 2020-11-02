@@ -3,7 +3,6 @@
 import os
 
 from guniflask_cli.gunicorn import GunicornApplication
-
 from .base import Command
 
 

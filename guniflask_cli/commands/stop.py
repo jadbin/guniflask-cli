@@ -6,7 +6,6 @@ import time
 
 from guniflask_cli.gunicorn import GunicornApplication
 from guniflask_cli.utils import pid_exists, read_pid
-
 from .base import Command
 
 

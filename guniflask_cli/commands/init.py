@@ -7,14 +7,14 @@ from os.path import exists, join, abspath, isdir, basename, dirname, relpath
 from shutil import ignore_patterns
 
 import inquirer
-from guniflask_cli import __version__
-from guniflask_cli.config import _template_folder
-from guniflask_cli.errors import AbortedError, TemplateError
-from guniflask_cli.utils import string_lowercase_underscore
 from inquirer.errors import ValidationError
 from inquirer.themes import GreenPassion
 from jinja2 import Environment
 
+from guniflask_cli import __version__
+from guniflask_cli.config import _template_folder
+from guniflask_cli.errors import AbortedError, TemplateError
+from guniflask_cli.utils import string_lowercase_underscore
 from .base import Command
 
 
