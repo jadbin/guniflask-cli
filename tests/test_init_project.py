@@ -1,9 +1,9 @@
 # coding=utf-8
 
-import os
-from os.path import join
-import subprocess
 import json
+import os
+import subprocess
+from os.path import join
 
 from guniflask_cli import __version__
 

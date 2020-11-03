@@ -7,9 +7,6 @@
 # guniflask configuration
 guniflask = dict(
     cors=True,
-    {%- if authentication_type == 'authorization_server' %}
-    authorization_server='authorization server address here',
-    {%- endif %}
     {%- if authentication_type == 'jwt' %}
     jwt=dict(
         secret='{{jwt_secret}}'

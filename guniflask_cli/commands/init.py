@@ -86,7 +86,6 @@ class InitCommand(Command):
                 choices=[
                     ('No authentication', None),
                     ('JWT authentication', 'jwt'),
-                    ('Authentication with authorization server', 'authorization_server'),
                 ],
                 default=default_authentication_type,
             ),
@@ -141,10 +140,6 @@ class InitCommand(Command):
     def resolve_ignore_files(self, settings):
         ignore_files = set()
         project_name = settings['project_name']
-        # configure files required to ignore
-        if settings['authentication_type'] != 'authorization_server':
-            ignore_files.add(f'{project_name}/config/microservice_config.py')
-
         if settings['authentication_type'] != 'jwt':
             ignore_files.add(f'{project_name}/config/jwt_config.py')
         return ignore_files
