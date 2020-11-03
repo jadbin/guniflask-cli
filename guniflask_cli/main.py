@@ -4,8 +4,9 @@ import argparse
 import inspect
 import sys
 
+from guniflask.config import set_app_env
+
 from .commands.base import Command
-from .env import set_default_env
 from .errors import UsageError
 from .utils import walk_modules
 
@@ -37,7 +38,7 @@ def _print_unknown_command(cmdname):
 
 
 def main(argv=None):
-    set_default_env()
+    set_app_env()
     if argv is None:
         argv = sys.argv
     cmds = _get_commands_from_module()

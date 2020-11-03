@@ -4,7 +4,6 @@ import os
 from collections import defaultdict
 from os.path import join
 
-from guniflask.config import load_app_env
 from sqlalchemy.schema import MetaData
 
 from guniflask_cli.errors import UsageError
@@ -37,7 +36,6 @@ class TableToModel(Command):
     def run(self, args):
         from guniflask.app import create_app
 
-        load_app_env()
         app = create_app()
         with app.app_context():
             settings = app.settings

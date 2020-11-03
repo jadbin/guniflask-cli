@@ -3,6 +3,7 @@
 import re
 import sys
 from os.path import join, dirname
+
 from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 
