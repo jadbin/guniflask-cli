@@ -35,8 +35,8 @@ class TableToModel(Command):
 
     def run(self, args):
         from guniflask.app import create_app
-
-        app = create_app()
+        app = create_app(with_context=False)
+        project_name = app.name
         with app.app_context():
             settings = app.settings
             s = app.extensions.get('sqlalchemy')

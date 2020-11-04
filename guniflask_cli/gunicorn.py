@@ -8,8 +8,6 @@ from os.path import join, dirname, exists
 
 from gunicorn.app.base import Application
 from gunicorn.config import KNOWN_SETTINGS
-from guniflask.config import app_name_from_env
-from guniflask.config import load_profile_config
 
 from .utils import walk_files, redirect_app_logger, redirect_logger
 
@@ -25,15 +23,16 @@ class GunicornApplication(Application):
             self.cfg.set(key, value)
 
     def load_config(self):
+        from guniflask.config import set_app_default_env
+        set_app_default_env()
         self.options = self._make_options(self.options)
         for key, value in self.options.items():
             if key in self.cfg.settings and value is not None:
                 self.cfg.set(key.lower(), value)
+        self._set_default_env()
 
     def load(self):
         from guniflask.app import create_app
-
-        self._set_default_env()
         app = create_app()
 
         gunicorn_logger = logging.getLogger('gunicorn.error')
@@ -44,6 +43,7 @@ class GunicornApplication(Application):
         return app
 
     def _make_options(self, opt: dict):
+        from guniflask.config import app_name_from_env
         home_dir = os.environ.get('GUNIFLASK_HOME')
         pid_dir = os.environ.get('GUNIFLASK_PID_DIR')
         if not pid_dir:
@@ -76,6 +76,7 @@ class GunicornApplication(Application):
         return options
 
     def _make_profile_options(self, active_profiles):
+        from guniflask.config import load_profile_config
         conf_dir = os.environ['GUNIFLASK_CONF_DIR']
         gc = load_profile_config(conf_dir, 'gunicorn', profiles=active_profiles)
         settings = {}
