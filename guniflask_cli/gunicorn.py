@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import getpass
 import logging
 import os
 from functools import partial
@@ -45,20 +44,15 @@ class GunicornApplication(Application):
     def _make_options(self, opt: dict):
         from guniflask.config import app_name_from_env
         home_dir = os.environ.get('GUNIFLASK_HOME')
-        pid_dir = os.environ.get('GUNIFLASK_PID_DIR')
-        if not pid_dir:
-            pid_dir = join(home_dir, '.pid')
-        log_dir = os.environ.get('GUNIFLASK_LOG_DIR')
-        if not log_dir:
-            log_dir = join(home_dir, '.log')
+        pid_dir = join(home_dir, '.pid')
+        log_dir = join(home_dir, '.log')
         app_name = app_name_from_env()
-        username = getpass.getuser()
         options = {
             'daemon': True,
             'workers': os.cpu_count(),
             'worker_class': 'gevent',
-            'accesslog': join(log_dir, f'{app_name}-{username}.access.log'),
-            'errorlog': join(log_dir, f'{app_name}-{username}.error.log'),
+            'accesslog': join(log_dir, f'{app_name}.access.log'),
+            'errorlog': join(log_dir, f'{app_name}.error.log'),
             'proc_name': app_name
         }
         profile_options = self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES'))
@@ -69,7 +63,7 @@ class GunicornApplication(Application):
         options.update(opt)
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
-            options['pidfile'] = join(pid_dir, f'{app_name}-{username}.pid')
+            options['pidfile'] = join(pid_dir, f'{app_name}.pid')
         self._makedirs(options)
         # hook wrapper
         HookWrapper.wrap(options)
