@@ -36,7 +36,7 @@ class TableToModel(Command):
     def run(self, args):
         from guniflask.app import create_app
         app = create_app(with_context=False)
-        project_name = app.name
+        app_name = app.name
         with app.app_context():
             settings = app.settings
             s = app.extensions.get('sqlalchemy')
@@ -47,9 +47,9 @@ class TableToModel(Command):
             binds = [None] + list(app.config.get('SQLALCHEMY_BINDS') or ())
             for b in binds:
                 if b is None:
-                    default_dest[b] = {'dest': join(project_name, 'models')}
+                    default_dest[b] = {'dest': join(app_name, 'models')}
                 else:
-                    default_dest[b] = {'dest': join(project_name, f'models_{b}')}
+                    default_dest[b] = {'dest': join(app_name, f'models_{b}')}
             dest_config = settings.get_by_prefix('guniflask.table2model_dest', default_dest)
             if isinstance(dest_config, str):
                 default_dest[None]['dest'] = dest_config
@@ -67,5 +67,5 @@ class TableToModel(Command):
                 engine = db.get_engine(bind=b)
                 metadata = MetaData(engine)
                 metadata.reflect()
-                gen = SqlToModelGenerator(project_name, metadata, bind=b)
+                gen = SqlToModelGenerator(app_name, metadata, bind=b)
                 gen.render(join(settings['home'], c.get('dest')))

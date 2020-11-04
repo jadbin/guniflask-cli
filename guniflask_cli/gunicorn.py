@@ -51,15 +51,15 @@ class GunicornApplication(Application):
         log_dir = os.environ.get('GUNIFLASK_LOG_DIR')
         if not log_dir:
             log_dir = join(home_dir, '.log')
-        project_name = app_name_from_env()
+        app_name = app_name_from_env()
         username = getpass.getuser()
         options = {
             'daemon': True,
             'workers': os.cpu_count(),
             'worker_class': 'gevent',
-            'accesslog': join(log_dir, f'{project_name}-{username}.access.log'),
-            'errorlog': join(log_dir, f'{project_name}-{username}.error.log'),
-            'proc_name': project_name
+            'accesslog': join(log_dir, f'{app_name}-{username}.access.log'),
+            'errorlog': join(log_dir, f'{app_name}-{username}.error.log'),
+            'proc_name': app_name
         }
         profile_options = self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES'))
         options.update(profile_options)
@@ -69,7 +69,7 @@ class GunicornApplication(Application):
         options.update(opt)
         # pid file
         if 'pidfile' not in options and options.get('daemon'):
-            options['pidfile'] = join(pid_dir, f'{project_name}-{username}.pid')
+            options['pidfile'] = join(pid_dir, f'{app_name}-{username}.pid')
         self._makedirs(options)
         # hook wrapper
         HookWrapper.wrap(options)
