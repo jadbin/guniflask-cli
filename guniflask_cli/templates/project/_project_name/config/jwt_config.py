@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from typing import Union
+
 from flask import request
 from guniflask.config import settings
 from guniflask.security import JwtManager, SecurityContext
@@ -9,7 +11,7 @@ from guniflask.security_config import SecurityConfigurer, HttpSecurityBuilder
 from guniflask.web import RequestFilter
 from werkzeug.local import LocalProxy
 
-jwt_manager = LocalProxy(lambda: settings['jwt_manager'])
+jwt_manager: Union[JwtManager, LocalProxy] = LocalProxy(lambda: settings['jwt_manager'])
 
 
 class BearerTokenExtractor:
@@ -23,7 +25,7 @@ class BearerTokenExtractor:
     @staticmethod
     def _extract_token_from_header():
         auth = request.headers.get('Authorization')
-        if auth is not None and auth.lower().startswith('Bearer'):
+        if auth is not None and auth.lower().startswith('bearer'):
             return auth.split(' ', 1)[1]
 
     @staticmethod
