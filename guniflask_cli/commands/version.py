@@ -1,5 +1,3 @@
-# coding=utf-8
-
 from guniflask_cli import __version__
 
 from .base import Command

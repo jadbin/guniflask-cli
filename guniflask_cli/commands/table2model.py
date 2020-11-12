@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import os
 from collections import defaultdict
 from os.path import join

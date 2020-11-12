@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import logging
 import os
 from functools import partial
