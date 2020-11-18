@@ -7,7 +7,7 @@ from typing import Any, Union
 
 import inflect
 import sqlalchemy
-from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint, CheckConstraint, ForeignKey
+from sqlalchemy import ForeignKeyConstraint, CheckConstraint, ForeignKey, Column
 from sqlalchemy.util import OrderedDict
 
 from .utils import string_camelcase, string_lowercase_underscore
@@ -40,8 +40,8 @@ class SqlToModelGenerator:
             # Add many-to-one relations
             for constraint in sorted(table.constraints, key=get_constraint_sort_key):
                 if isinstance(constraint, ForeignKeyConstraint):
-                    tablename = constraint.elements[0].column.table.name
-                    self.models[tablename].add_many_to_one_relation(constraint)
+                    self.models[constraint.elements[0].column.table.name].add_one_to_many_relation(constraint)
+                    self.models[constraint.table.name].add_many_to_one_relation(constraint)
 
     def render(self, path):
         if not exists(path):
@@ -50,7 +50,6 @@ class SqlToModelGenerator:
         for model in self.models.values():
             module_name = convert_to_valid_identifier(model.table.name)
             with open(join(path, module_name + '.py'), 'w', encoding='utf-8') as f:
-                f.write('# coding=utf-8\n\n')
                 f.write(self.render_imports(model))
                 tables_content = self.render_secondary_tables(model)
                 if tables_content:
@@ -60,7 +59,6 @@ class SqlToModelGenerator:
                 f.write(self.render_model(model))
             model_modules.append({'module': module_name, 'class': model.class_name})
         with open(join(path, '__init__.py'), 'w', encoding='utf-8') as f:
-            f.write('# coding=utf-8\n\n')
             for m in model_modules:
                 f.write(f'from .{m["module"]} import {m["class"]}\n')
 
@@ -113,11 +111,8 @@ class SqlToModelGenerator:
     def render_column(self, column, show_name=False):
         is_sole_pk = column.primary_key and len(column.table.primary_key) == 1
         dedicated_fks = [c for c in column.foreign_keys if len(c.constraint.columns) == 1]
-        is_unique = any(isinstance(c, UniqueConstraint) and set(c.columns) == {column}
-                        for c in column.table.constraints)
-        is_unique = is_unique or any(i.unique and set(i.columns) == {column}
-                                     for i in column.table.indexes)
-        has_index = any(set(i.columns) == {column} for i in column.table.indexes)
+        is_unique = ColumnUtils.is_unique(column)
+        has_index = ColumnUtils.has_index(column)
         server_default = None
         kwargs = []
         if column.key != column.name:
@@ -231,6 +226,23 @@ def get_constraint_sort_key(constraint):
     return constraint.__class__.__name__[0] + repr(list(constraint.columns.keys()))
 
 
+def is_one_to_one_relationship(constraint):
+    if isinstance(constraint, ForeignKeyConstraint):
+        if len(constraint.columns) == 1 and any(ColumnUtils.is_unique(col) for col in constraint.columns):
+            return True
+    return False
+
+
+class ColumnUtils:
+    @staticmethod
+    def is_unique(column: Column):
+        return any(i.unique and set(i.columns) == {column} for i in column.table.indexes)
+
+    @staticmethod
+    def has_index(column: Column):
+        return any(set(i.columns) == {column} for i in column.table.indexes)
+
+
 class Model:
     parent_name = 'db.Model'
 
@@ -247,8 +259,12 @@ class Model:
             relationship = ManyToManyRelationship(self.table.name, target_tbl, association_table)
             self.relationships.append(relationship)
 
+    def add_one_to_many_relation(self, constraint):
+        relationship = OneToManyRelationship(self.table.name, constraint.table.name, constraint)
+        self.relationships.append(relationship)
+
     def add_many_to_one_relation(self, constraint):
-        relationship = ManyToOneRelationship(self.table.name, constraint.table.name, constraint)
+        relationship = ManyToOneRelationship(self.table.name, constraint.elements[0].column.table.name, constraint)
         self.relationships.append(relationship)
 
 
@@ -266,23 +282,29 @@ class ManyToOneRelationship(Relationship):
 
         self.preferred_name = convert_to_valid_identifier(target_tbl)
         self.constraint = constraint
+        self.kwargs['lazy'] = repr('joined')
+
+        back_populates = convert_to_valid_identifier(source_tbl)
+        if not is_one_to_one_relationship(constraint):
+            back_populates = inflect_engine.plural(back_populates)
+        self.kwargs['back_populates'] = repr(f'{back_populates}')
+
+
+class OneToManyRelationship(Relationship):
+    def __init__(self, source_tbl, target_tbl, constraint):
+        super().__init__(source_tbl, target_tbl)
+
+        self.preferred_name = convert_to_valid_identifier(target_tbl)
+        self.constraint = constraint
 
         # Add uselist=False to one-to-one relationships
-        column_names = list(constraint.columns.keys())
-        if any(isinstance(c, (PrimaryKeyConstraint, UniqueConstraint)) and
-               set(col.name for col in c.columns) == set(column_names)
-               for c in constraint.table.constraints):
-            self.kwargs['uselist'] = 'False'
-
-        if self.kwargs.get('uselist') is not False:
+        if is_one_to_one_relationship(constraint):
+            self.kwargs['uselist'] = False
+            self.kwargs['lazy'] = repr('joined')
+        else:
             self.preferred_name = inflect_engine.plural(self.preferred_name)
             self.kwargs['lazy'] = repr('select')
-        else:
-            self.kwargs['lazy'] = repr('joined')
-        self.kwargs['backref'] = "db.backref({}, lazy='joined')".format(
-            repr(convert_to_valid_identifier(source_tbl))
-        )
-        self.kwargs['cascade'] = repr('all, delete-orphan')
+        self.kwargs['back_populates'] = repr(f'{convert_to_valid_identifier(source_tbl)}')
 
 
 class ManyToManyRelationship(Relationship):
@@ -297,14 +319,6 @@ class ManyToManyRelationship(Relationship):
         self.kwargs['backref'] = "db.backref({}, lazy='select')".format(
             repr(inflect_engine.plural(convert_to_valid_identifier(source_tbl)))
         )
-
-
-class ColumnProperty:
-    def __init__(self):
-        self.kwargs = {}
-
-    def match_column(self, column):
-        raise NotImplementedError
 
 
 class ImportCollector(OrderedDict):
