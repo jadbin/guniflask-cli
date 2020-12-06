@@ -94,7 +94,7 @@ class InitCommand(Command):
         }
         settings.update(answers)
         if settings.get('authentication_type') == 'jwt':
-            from guniflask.security.jwt import JwtHelper
+            from guniflask.security import JwtHelper
             settings['jwt_secret'] = JwtHelper.generate_jwt_secret()
         return settings
 

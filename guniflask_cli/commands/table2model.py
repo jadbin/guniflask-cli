@@ -36,7 +36,7 @@ class TableToModel(Command):
 
     def run(self, args):
         if args.no_app:
-            from guniflask.app.initializer import AppInitializer
+            from guniflask.app import AppInitializer
             from guniflask.config import load_app_env
             load_app_env()
             app_initializer = AppInitializer()
