@@ -2,6 +2,7 @@ import os
 from collections import defaultdict
 from os.path import join
 
+from flask import Flask
 from sqlalchemy.schema import MetaData
 
 from guniflask_cli.errors import UsageError
@@ -25,6 +26,8 @@ class TableToModel(Command):
     def add_arguments(self, parser):
         parser.add_argument('-p', '--active-profiles', dest='active_profiles', metavar='PROFILES',
                             help='active profiles (comma-separated)')
+        parser.add_argument('--no-app', dest='no_app', action='store_true',
+                            help='do conversion without initializing app')
 
     def process_arguments(self, args):
         if args.active_profiles:
@@ -32,8 +35,16 @@ class TableToModel(Command):
         os.environ.setdefault('GUNIFLASK_ACTIVE_PROFILES', 'dev')
 
     def run(self, args):
-        from guniflask.app import create_app
-        app = create_app(with_context=False)
+        if args.no_app:
+            from guniflask.app.initializer import AppInitializer
+            from guniflask.config import load_app_env
+            load_app_env()
+            app_initializer = AppInitializer()
+            app = Flask(app_initializer.name)
+            app_initializer._init_app(app)
+        else:
+            from guniflask.app import create_app
+            app = create_app(with_context=False)
         app_name = app.name
         with app.app_context():
             settings = app.settings
