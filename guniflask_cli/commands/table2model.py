@@ -41,6 +41,7 @@ class TableToModel(Command):
             load_app_env()
             app_initializer = AppInitializer()
             app = Flask(app_initializer.name)
+            app_initializer._make_settings(app)
             app_initializer._init_app(app)
         else:
             from guniflask.app import create_app
