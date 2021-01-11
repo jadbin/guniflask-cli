@@ -21,6 +21,7 @@ class SqlToModelGenerator:
         self.metadata = metadata
         self.indent = ' ' * indent
         self.bind = bind
+        self.collector = None
 
         many_to_many_tables = set()
         many_to_many_links = defaultdict(list)
@@ -50,35 +51,36 @@ class SqlToModelGenerator:
         for model in self.models.values():
             module_name = convert_to_valid_identifier(model.table.name)
             with open(join(path, module_name + '.py'), 'w', encoding='utf-8') as f:
-                f.write(self.render_imports(model))
+                self.collector = ImportCollector()
+
+                pending = []
                 tables_content = self.render_secondary_tables(model)
                 if tables_content:
-                    f.write('\n')
-                    f.write(tables_content)
-                f.write('\n\n')
-                f.write(self.render_model(model))
+                    pending.append('\n')
+                    pending.append(tables_content)
+                pending.append('\n\n')
+                pending.append(self.render_model(model))
+
+                f.write(self.render_imports())
+                for p in pending:
+                    f.write(p)
+
             model_modules.append({'module': module_name, 'class': model.class_name})
         with open(join(path, '__init__.py'), 'w', encoding='utf-8') as f:
             for m in model_modules:
                 f.write(f'from .{m["module"]} import {m["class"]}\n')
 
-    def render_imports(self, model):
-        collector = ImportCollector()
-        collector.add_import('BaseModelMixin', 'guniflask.orm')
-
-        for col in model.table.columns:
-            if col.server_default:
-                collector.add_import(('text', '_text'), 'sqlalchemy')
-            collector.add_import(col.type)
+    def render_imports(self):
+        self.collector.add_import('BaseModelMixin', 'guniflask.orm')
 
         imports = ''
-        for k, vlist in collector.items():
+        for k, vlist in self.collector.items():
             for v in vlist:
                 if isinstance(v, tuple):
                     imports += f'from {k} import {v[0]} as {v[1]}\n'
                 else:
                     imports += f'from {k} import {v}\n'
-        if len(collector) > 0:
+        if len(self.collector) > 0:
             imports += '\n'
         imports += f'from {self.name} import db\n'
         return imports
@@ -109,11 +111,18 @@ class SqlToModelGenerator:
         return f'{tablename} = db.Table({table.name!r},\n{columns_str}\n)\n'
 
     def render_column(self, column, show_name=False):
+        if column.server_default:
+            self.collector.add_import(('text', '_text'), 'sqlalchemy')
+        self.collector.add_import(column.type)
+
         is_sole_pk = column.primary_key and len(column.table.primary_key) == 1
         dedicated_fks = [c for c in column.foreign_keys if len(c.constraint.columns) == 1]
         is_unique = ColumnUtils.is_unique(column)
         has_index = ColumnUtils.has_index(column)
         server_default = None
+
+        render_coltype = not dedicated_fks or any(fk.column is column for fk in dedicated_fks)
+
         kwargs = []
         if column.key != column.name:
             kwargs.append('key')
@@ -141,7 +150,7 @@ class SqlToModelGenerator:
         return "db.Column({})".format(
             ', '.join(
                 ([repr(column.name)] if show_name else []) +
-                [self.render_column_type(column.type)] +
+                ([self.render_column_type(column.type)] if render_coltype else []) +
                 [self.render_constraint(x) for x in dedicated_fks] +
                 [f'{i}={getattr(column, i)!r}' for i in kwargs] +
                 ([server_default] if server_default else [])
@@ -150,8 +159,13 @@ class SqlToModelGenerator:
 
     def render_column_type(self, coltype):
         argspec = inspect.getfullargspec(coltype.__class__.__init__)
-        defaults = dict(zip(argspec.args[-len(argspec.defaults or ()):],
-                            argspec.defaults or ()))
+        defaults = dict(
+            zip(
+                argspec.args[-len(argspec.defaults or ()):],
+                argspec.defaults or (),
+            )
+        )
+
         args = []
         kwargs = OrderedDict()
         use_kwargs = False
@@ -165,10 +179,12 @@ class SqlToModelGenerator:
             default = defaults.get(attr, missing)
             if value is missing or value == default:
                 use_kwargs = True
-            elif use_kwargs:
-                kwargs[attr] = repr(value)
             else:
-                args.append(repr(value))
+                if use_kwargs:
+                    kwargs[attr] = repr(value)
+                else:
+                    args.append(repr(value))
+                self.collector.add_import(type(value))
 
         if isinstance(coltype, sqlalchemy.Enum) and coltype.name is not None:
             kwargs['name'] = repr(coltype.name)
@@ -330,5 +346,9 @@ class ImportCollector(OrderedDict):
                 obj_type = type(name)
             pkg = obj_type.__module__
             name = obj_type.__name__
+
+            if pkg == 'builtins':
+                return
+
         names = self.setdefault(pkg, set())
         names.add(name)
