@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 import re
@@ -88,3 +89,14 @@ def redirect_app_logger(app: Flask, logger):
     app.logger.handlers = logger.handlers
     app.logger.setLevel(logger.level)
     app.logger.propagate = False
+
+
+def ignore_by_patterns(path, names, patterns):
+    ignored_names = set()
+    for pattern in patterns:
+        t = [join(path, i) for i in names]
+        ignored = set(fnmatch.filter(t, pattern))
+        for i in names:
+            if join(path, i) in ignored:
+                ignored_names.add(i)
+    return ignored_names

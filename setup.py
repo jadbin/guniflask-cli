@@ -33,11 +33,12 @@ version = read_version()
 install_requires = [
     f'guniflask=={version}',
     'gunicorn>=20.0.4',
-    'gevent>=1.4.0',
-    'Jinja2>=2.10',
+    'gevent>=21.1.0',
+    'Jinja2>=2.11.2',
     'inflect>=4.1.0',
-    'setproctitle>=1.1.10',
+    'setproctitle>=1.2.1',
     'inquirer>=2.7.0',
+    'cython>=0.29.21',
 ]
 
 
