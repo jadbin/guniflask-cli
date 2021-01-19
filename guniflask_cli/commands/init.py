@@ -226,13 +226,13 @@ class InitCommand(Command):
 
     @staticmethod
     def print_welcome(project_dir):
-        print(f'\033[37mWelcome to guniflask-cli generator\033[0m \033[33mv{__version__}\033[0m', flush=True)
-        print(f'\033[37mApplication file will be created in folder:\033[0m \033[33m{project_dir}\033[0m', flush=True)
+        print(f'\033[37mWelcome to guniflask generator\033[0m \033[33mv{__version__}\033[0m', flush=True)
+        print(f'\033[37mApplication files will be created in folder:\033[0m \033[33m{project_dir}\033[0m', flush=True)
 
     @staticmethod
     def print_regenerate_project():
         print('\033[32mThis is an existing project, using the configuration from .guniflask-init.json '
-              'to regenerate the project...\033[0m')
+              'to regenerate the project...\033[0m', flush=True)
 
     @staticmethod
     def print_success():

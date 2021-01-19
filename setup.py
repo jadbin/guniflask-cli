@@ -38,7 +38,7 @@ install_requires = [
     'inflect>=4.1.0',
     'setproctitle>=1.2.1',
     'inquirer>=2.7.0',
-    'cython>=0.29.21',
+    'Cython>=0.29.21',
 ]
 
 
