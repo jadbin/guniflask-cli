@@ -30,13 +30,15 @@ class GunicornApplication(Application):
 
     def load(self):
         from guniflask.app import create_app
-        app = create_app()
+        from guniflask.config import app_name_from_env
 
         gunicorn_logger = logging.getLogger('gunicorn.error')
+        app_name = app_name_from_env()
         redirect_logger('guniflask', gunicorn_logger)
-        redirect_logger(app.name, gunicorn_logger)
-        redirect_app_logger(app, gunicorn_logger)
+        redirect_logger(app_name, gunicorn_logger)
 
+        app = create_app()
+        redirect_app_logger(app, gunicorn_logger)
         return app
 
     def _make_options(self, opt: dict):
