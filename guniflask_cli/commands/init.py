@@ -125,6 +125,7 @@ class InitCommand(Command):
             settings['guniflask_max_version'] = f'{version_info[0]}.{int(version_info[1]) + 1}'
         else:
             settings['guniflask_max_version'] = f'{int(version_info[0]) + 1}.0'
+        self.infer_project_version(project_dir, settings)
 
         self.print_copying_files()
         self.force = False
@@ -134,6 +135,17 @@ class InitCommand(Command):
         self.copytree(join(_template_folder, 'project'), project_dir, settings)
         print(flush=True)
         self.print_success()
+
+    def infer_project_version(self, project_dir, settings):
+        project_name = settings['project_name']
+        p = join(project_dir, project_name, '__init__.py')
+        with open(p, 'r', encoding='utf-8') as f:
+            s = re.search(r"__version__ = '([^']+)'", f.read())
+        if s:
+            version = s.group(1)
+        else:
+            version = '0.0.0'
+        settings['project_version'] = version
 
     def resolve_ignore_files(self, settings):
         ignore_files = set()
