@@ -82,7 +82,7 @@ class SqlToModelGenerator:
                     imports += f'from {k} import {v}\n'
         if len(self.collector) > 0:
             imports += '\n'
-        imports += f'from {self.name} import db\n'
+        imports += f'from {self.name}.app import db\n'
         return imports
 
     def render_model(self, model):
