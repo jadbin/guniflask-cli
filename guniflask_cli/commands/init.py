@@ -1,7 +1,7 @@
 import json
 import os
 import re
-from os.path import exists, join, abspath, isdir, basename, dirname, relpath
+from os.path import exists, join, abspath, isdir, basename, dirname, relpath, isfile
 from shutil import ignore_patterns
 
 import inquirer
@@ -139,8 +139,11 @@ class InitCommand(Command):
     def infer_project_version(self, project_dir, settings):
         project_name = settings['project_name']
         p = join(project_dir, project_name, '__init__.py')
-        with open(p, 'r', encoding='utf-8') as f:
-            s = re.search(r"__version__ = '([^']+)'", f.read())
+        if isfile(p):
+            with open(p, 'r', encoding='utf-8') as f:
+                s = re.search(r"__version__ = '([^']+)'", f.read())
+        else:
+            s = None
         if s:
             version = s.group(1)
         else:
