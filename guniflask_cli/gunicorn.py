@@ -72,7 +72,7 @@ class GunicornApplication(Application):
     def _make_profile_options(self, active_profiles):
         from guniflask.config import load_profile_config
         conf_dir = os.environ['GUNIFLASK_CONF_DIR']
-        gc = load_profile_config(conf_dir, 'gunicorn', profiles=active_profiles)
+        gc = load_profile_config(conf_dir, 'gunicorn', active_profiles=active_profiles)
         settings = {}
         snames = set([i.name for i in KNOWN_SETTINGS])
         for name in gc:
