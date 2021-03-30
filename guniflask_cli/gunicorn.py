@@ -51,19 +51,23 @@ class GunicornApplication(Application):
             'daemon': True,
             'workers': os.cpu_count(),
             'worker_class': 'gevent',
-            'accesslog': join(log_dir, f'{app_name}.access.log'),
-            'errorlog': join(log_dir, f'{app_name}.error.log'),
             'proc_name': app_name
         }
         profile_options = self._make_profile_options(os.environ.get('GUNIFLASK_ACTIVE_PROFILES'))
         options.update(profile_options)
+
         # if debug
         if os.environ.get('GUNIFLASK_DEBUG'):
             self._update_debug_options(options)
         options.update(opt)
-        # pid file
-        if 'pidfile' not in options and options.get('daemon'):
-            options['pidfile'] = join(pid_dir, f'{app_name}.pid')
+
+        if options.get('daemon'):
+            # pid file
+            options.setdefault('pidfile', join(pid_dir, f'{app_name}.pid'))
+            # log
+            options.setdefault('accesslog', join(log_dir, f'{app_name}.access.log'))
+            options.setdefault('errorlog', join(log_dir, f'{app_name}.error.log'))
+
         self._makedirs(options)
         # hook wrapper
         HookWrapper.wrap(options)
