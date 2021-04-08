@@ -4,6 +4,7 @@ import re
 from os.path import exists, join, abspath, isdir, basename, dirname, relpath, isfile
 from shutil import ignore_patterns
 
+import click
 import inquirer
 from inquirer.errors import ValidationError
 from inquirer.themes import GreenPassion
@@ -13,30 +14,26 @@ from guniflask_cli import __version__
 from guniflask_cli.config import _template_folder
 from guniflask_cli.errors import AbortedError, TemplateError
 from guniflask_cli.utils import string_lowercase_underscore
-from .base import Command
 
 
-class InitCommand(Command):
-    @property
-    def syntax(self):
-        return '[options]'
+@click.group()
+def cli_init():
+    pass
 
-    @property
-    def name(self):
-        return 'init'
 
-    @property
-    def short_desc(self):
-        return 'Initialize a project'
+@cli_init.command('init')
+@click.option('-d', '--root-dir', metavar='DIR', help='Application root directory.')
+@click.option('-f', '--force', default=False, is_flag=True, help='Force generating an application.')
+def main(root_dir, force):
+    """
+    Initialize a project.
+    """
+    Init().run(root_dir, force)
 
-    def add_arguments(self, parser):
-        parser.add_argument('-d', '--root-dir', dest='root_dir', metavar='DIR',
-                            help='application root directory')
-        parser.add_argument('-f', '--force', dest='force', action='store_true', default=False,
-                            help='force generating an application')
 
-    def run(self, args):
-        project_dir = abspath(args.root_dir or '')
+class Init:
+    def run(self, root_dir, force):
+        project_dir = abspath(root_dir or '')
         self.print_welcome(project_dir)
         try:
             init_json_file = join(project_dir, '.guniflask-init.json')
@@ -44,7 +41,7 @@ class InitCommand(Command):
             try:
                 with open(init_json_file, 'r', encoding='utf-8') as f:
                     old_settings = json.load(f)
-                if args.force:
+                if force:
                     raise FileNotFoundError
                 settings = old_settings
                 self.print_regenerate_project()

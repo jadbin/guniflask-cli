@@ -2,40 +2,36 @@ import os
 from collections import defaultdict
 from os.path import join
 
+import click
 from flask import Flask
 from sqlalchemy.schema import MetaData
 
 from guniflask_cli.errors import UsageError
 from guniflask_cli.sqlgen import SqlToModelGenerator
-from .base import Command
 
 
-class TableToModel(Command):
-    @property
-    def name(self):
-        return 'table2model'
+@click.group()
+def cli_table2model():
+    pass
 
-    @property
-    def syntax(self):
-        return '[options]'
 
-    @property
-    def short_desc(self):
-        return 'Convert database tables to definition of models'
+@cli_table2model.command('table2model')
+@click.option('-p', '--active-profiles', metavar='PROFILES', help='Active profiles (comma-separated).')
+@click.option('--no-app', default=False, is_flag=True, help='Do conversion without initializing app.')
+def main(active_profiles, no_app):
+    """
+    Convert database tables to definition of models.
+    """
+    TableToModel().run(active_profiles, no_app)
 
-    def add_arguments(self, parser):
-        parser.add_argument('-p', '--active-profiles', dest='active_profiles', metavar='PROFILES',
-                            help='active profiles (comma-separated)')
-        parser.add_argument('--no-app', dest='no_app', action='store_true',
-                            help='do conversion without initializing app')
 
-    def process_arguments(self, args):
-        if args.active_profiles:
-            os.environ['GUNIFLASK_ACTIVE_PROFILES'] = args.active_profiles
+class TableToModel:
+    def run(self, active_profiles, no_app):
+        if active_profiles:
+            os.environ['GUNIFLASK_ACTIVE_PROFILES'] = active_profiles
         os.environ.setdefault('GUNIFLASK_ACTIVE_PROFILES', 'dev')
 
-    def run(self, args):
-        if args.no_app:
+        if no_app:
             from guniflask.app import AppInitializer
             from guniflask.config import load_app_env
             load_app_env()

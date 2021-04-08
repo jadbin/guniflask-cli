@@ -1,28 +1,31 @@
 import os
 import signal
 
+import click
+
 from guniflask_cli.gunicorn import GunicornApplication
 from guniflask_cli.utils import pid_exists, read_pid
-from .base import Command
 
 
-class Restart(Command):
-    @property
-    def name(self):
-        return 'restart'
+@click.group()
+def cli_restart():
+    pass
 
-    @property
-    def short_desc(self):
-        return 'Restart application'
 
-    def add_arguments(self, parser):
-        parser.add_argument('-p', '--active-profiles', dest='active_profiles', metavar='PROFILES',
-                            help='active profiles (comma-separated) which help to locate PID file')
+@cli_restart.command('restart')
+@click.option('-p', '--active-profiles', metavar='PROFILES', help='Active profiles (comma-separated).')
+def main(active_profiles):
+    """
+    Restart application.
+    """
+    Restart().run(active_profiles)
 
-    def run(self, args):
+
+class Restart:
+    def run(self, active_profiles):
         not_found = True
-        if args.active_profiles:
-            profile_list = [args.active_profiles]
+        if active_profiles:
+            profile_list = [active_profiles]
         else:
             profile_list = ['prod', 'dev']
         for p in profile_list:

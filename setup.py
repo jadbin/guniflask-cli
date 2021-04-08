@@ -39,6 +39,7 @@ install_requires = [
     'setproctitle>=1.2.1',
     'inquirer>=2.7.0',
     'Cython>=0.29.21',
+    'click>=7.1.2',
 ]
 
 

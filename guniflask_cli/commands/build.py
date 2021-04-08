@@ -3,26 +3,26 @@ import shutil
 from importlib import import_module
 from os.path import join, basename, exists, isdir, dirname
 
-from .base import Command
+import click
+
 from ..utils import ignore_by_patterns
 
 
-class Build(Command):
-    @property
-    def name(self):
-        return 'build'
+@click.group()
+def cli_build():
+    pass
 
-    @property
-    def short_desc(self):
-        return 'Build application'
 
-    def add_arguments(self, parser):
-        pass
+@cli_build.command('build')
+def main():
+    """
+    Build application.
+    """
+    Build().run()
 
-    def process_arguments(self, args):
-        pass
 
-    def run(self, args):
+class Build:
+    def run(self):
         from guniflask.config import app_name_from_env, set_app_default_env
 
         set_app_default_env()

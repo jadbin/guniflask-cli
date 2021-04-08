@@ -1,31 +1,33 @@
 import os
 
+import click
+
 from guniflask_cli.gunicorn import GunicornApplication
-from .base import Command
 
 
-class Start(Command):
-    @property
-    def name(self):
-        return 'start'
+@click.group()
+def cli_start():
+    pass
 
-    @property
-    def short_desc(self):
-        return 'Start application'
 
-    def add_arguments(self, parser):
-        parser.add_argument('--daemon-off', dest='daemon_off', action='store_true', help='turn off daemon mode')
-        parser.add_argument('-p', '--active-profiles', dest='active_profiles', metavar='PROFILES',
-                            help='active profiles (comma-separated)')
+@cli_start.command('start')
+@click.option('--daemon-off', default=False, is_flag=True, help='Turn off daemon mode.')
+@click.option('-p', '--active-profiles', metavar='PROFILES', help='Active profiles (comma-separated).')
+def main(daemon_off, active_profiles):
+    """
+    Start application.
+    """
+    Start().run(daemon_off, active_profiles)
 
-    def process_arguments(self, args):
-        if args.active_profiles:
-            os.environ['GUNIFLASK_ACTIVE_PROFILES'] = args.active_profiles
+
+class Start:
+    def run(self, daemon_off, active_profiles):
+        if active_profiles:
+            os.environ['GUNIFLASK_ACTIVE_PROFILES'] = active_profiles
         os.environ.setdefault('GUNIFLASK_ACTIVE_PROFILES', 'prod')
 
-    def run(self, args):
         opt = {}
-        if args.daemon_off:
+        if daemon_off:
             opt['daemon'] = False
         app = GunicornApplication(**opt)
 

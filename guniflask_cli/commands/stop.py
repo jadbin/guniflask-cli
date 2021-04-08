@@ -2,28 +2,31 @@ import os
 import signal
 import time
 
+import click
+
 from guniflask_cli.gunicorn import GunicornApplication
 from guniflask_cli.utils import pid_exists, read_pid
-from .base import Command
 
 
-class Stop(Command):
-    @property
-    def name(self):
-        return 'stop'
+@click.group()
+def cli_stop():
+    pass
 
-    @property
-    def short_desc(self):
-        return 'Stop application'
 
-    def add_arguments(self, parser):
-        parser.add_argument('-p', '--active-profiles', dest='active_profiles', metavar='PROFILES',
-                            help='active profiles (comma-separated) which help to locate PID file')
+@cli_stop.command('start')
+@click.option('-p', '--active-profiles', metavar='PROFILES', help='Active profiles (comma-separated).')
+def main(active_profiles):
+    """
+    Stop application.
+    """
+    Stop().run(active_profiles)
 
-    def run(self, args):
+
+class Stop:
+    def run(self, active_profiles):
         not_found = True
-        if args.active_profiles:
-            profile_list = [args.active_profiles]
+        if active_profiles:
+            profile_list = [active_profiles]
         else:
             profile_list = ['prod', 'dev']
         for p in profile_list:
