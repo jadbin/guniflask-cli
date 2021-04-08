@@ -13,7 +13,7 @@ def cli_stop():
     pass
 
 
-@cli_stop.command('start')
+@cli_stop.command('stop')
 @click.option('-p', '--active-profiles', metavar='PROFILES', help='Active profiles (comma-separated).')
 def main(active_profiles):
     """
