@@ -2,8 +2,8 @@
 guniflask-cli
 =============
 
-.. image:: https://travis-ci.org/jadbin/guniflask-cli.svg?branch=master
-    :target: https://travis-ci.org/jadbin/guniflask-cli
+.. image:: https://travis-ci.com/jadbin/guniflask-cli.svg?branch=master
+    :target: https://travis-ci.com/jadbin/guniflask-cli
 .. image:: https://coveralls.io/repos/github/jadbin/guniflask-cli/badge.svg?branch=master
     :target: https://coveralls.io/github/jadbin/guniflask-cli?branch=master
 .. image:: https://img.shields.io/github/license/jadbin/guniflask-cli
