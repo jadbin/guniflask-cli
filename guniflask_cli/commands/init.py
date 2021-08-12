@@ -9,6 +9,7 @@ import inquirer
 from inquirer.errors import ValidationError
 from inquirer.themes import GreenPassion
 from jinja2 import Environment
+from tzlocal import get_localzone
 
 from guniflask_cli import __version__
 from guniflask_cli.config import _template_folder
@@ -115,14 +116,7 @@ class Init:
 
     def copy_files(self, project_dir, settings):
         settings = dict(settings)
-        settings['project_dir'] = project_dir
-        settings['guniflask_min_version'] = __version__
-        version_info = __version__.split('.')
-        if version_info[0] == '0':
-            settings['guniflask_max_version'] = f'{version_info[0]}.{int(version_info[1]) + 1}'
-        else:
-            settings['guniflask_max_version'] = f'{int(version_info[0]) + 1}.0'
-        self.infer_project_version(project_dir, settings)
+        self.enrich_settings_for_generation(project_dir, settings)
 
         self.print_copying_files()
         self.force = False
@@ -132,6 +126,17 @@ class Init:
         self.copytree(join(_template_folder, 'project'), project_dir, settings)
         print(flush=True)
         self.print_success()
+
+    def enrich_settings_for_generation(self, project_dir, settings):
+        settings['project_dir'] = project_dir
+        settings['guniflask_min_version'] = __version__
+        version_info = __version__.split('.')
+        if version_info[0] == '0':
+            settings['guniflask_max_version'] = f'{version_info[0]}.{int(version_info[1]) + 1}'
+        else:
+            settings['guniflask_max_version'] = f'{int(version_info[0]) + 1}.0'
+        self.infer_project_version(project_dir, settings)
+        settings['timezone'] = str(get_localzone())
 
     def infer_project_version(self, project_dir, settings):
         project_name = settings['project_name']
