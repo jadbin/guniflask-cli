@@ -149,7 +149,7 @@ class Init:
         if s:
             version = s.group(1)
         else:
-            version = '0.0.0'
+            version = '0.0'
         settings['project_version'] = version
 
     def resolve_ignore_files(self, settings):
