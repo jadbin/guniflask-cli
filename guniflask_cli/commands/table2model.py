@@ -4,7 +4,6 @@ from os.path import join
 
 import click
 from flask import Flask
-from sqlalchemy.schema import MetaData
 
 from guniflask_cli.errors import UsageError
 from guniflask_cli.sqlgen import SqlToModelGenerator
@@ -47,7 +46,7 @@ class TableToModel:
             settings = app.settings
             s = app.extensions.get('sqlalchemy')
             if not s:
-                raise UsageError('Not found SQLAlchemy')
+                raise UsageError('Did you initialize Flask-SQLAlchemy?')
             db = s.db
             default_dest = defaultdict(dict)
             binds = [None] + list(app.config.get('SQLALCHEMY_BINDS') or ())
@@ -70,8 +69,6 @@ class TableToModel:
                         default_dest[b].update(c)
             for b in default_dest:
                 c = default_dest[b]
-                engine = db.get_engine(bind=b)
-                metadata = MetaData(engine)
-                metadata.reflect()
-                gen = SqlToModelGenerator(app_name, metadata, bind=b)
+                engine = db.engines[b]
+                gen = SqlToModelGenerator(app_name, engine, bind=b)
                 gen.render(join(settings['home'], c.get('dest')))

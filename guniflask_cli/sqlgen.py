@@ -8,6 +8,7 @@ from typing import Any, Union
 import inflect
 import sqlalchemy
 from sqlalchemy import ForeignKeyConstraint, CheckConstraint, ForeignKey, Column
+from sqlalchemy.schema import MetaData
 from sqlalchemy.util import OrderedDict
 
 from .utils import string_camelcase, string_lowercase_underscore
@@ -16,12 +17,16 @@ inflect_engine = inflect.engine()
 
 
 class SqlToModelGenerator:
-    def __init__(self, name, metadata, indent=4, bind=None):
+    def __init__(self, name, engine, indent=4, bind=None):
         self.name = name
-        self.metadata = metadata
+        self.engine = engine
         self.indent = ' ' * indent
         self.bind = bind
         self.collector = None
+
+        metadata = MetaData()
+        metadata.reflect(bind=engine)
+        self.metadata = metadata
 
         many_to_many_tables = set()
         many_to_many_links = defaultdict(list)
@@ -90,6 +95,7 @@ class SqlToModelGenerator:
         header_str += f"{self.indent}__tablename__ = '{model.table.name}'\n"
         if self.bind:
             header_str += f"{self.indent}__bind_key__ = '{self.bind}'\n"
+        header_str += f"{self.indent}__table_args__ = {{'implicit_returning': False}}\n"
         header_str += '\n'
         columns_str = ''
         for col in model.table.columns:
@@ -219,7 +225,8 @@ class SqlToModelGenerator:
 
     def get_compiled_expression(self, statement):
         return str(statement.compile(
-            self.metadata.bind, compile_kwargs={"literal_binds": True}))
+            self.engine, compile_kwargs={"literal_binds": True}
+        ))
 
 
 def convert_to_valid_identifier(name):
