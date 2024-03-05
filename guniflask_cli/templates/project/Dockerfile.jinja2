@@ -1,7 +1,4 @@
-FROM python:3.7
-
-ADD ./ /opt/{{project_name}}
-WORKDIR /opt/{{project_name}}
+FROM python:3.9
 
 ENV TZ={{timezone}} \
   DEBIAN_FRONTEND=noninteractive
@@ -11,8 +8,12 @@ RUN ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
   && dpkg-reconfigure --frontend noninteractive tzdata \
   && rm -rf /var/lib/apt/lists/*
 
-RUN chmod +x bin/manage \
-  && pip install -r requirements/app.txt \
+ADD ./requirements /opt/requirements
+RUN pip install -r /opt/requirements/app.txt \
   && rm -rf ~/.cache
+
+ADD ./ /opt/{{project_name}}
+WORKDIR /opt/{{project_name}}
+RUN chmod +x bin/manage
 
 ENTRYPOINT ["bin/manage", "start", "--daemon-off"]
