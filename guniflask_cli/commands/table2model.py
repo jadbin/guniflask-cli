@@ -44,10 +44,9 @@ class TableToModel:
         app_name = app.name
         with app.app_context():
             settings = app.settings
-            s = app.extensions.get('sqlalchemy')
-            if not s:
+            db = app.extensions.get('sqlalchemy')
+            if not db:
                 raise UsageError('Did you initialize Flask-SQLAlchemy?')
-            db = s.db
             default_dest = defaultdict(dict)
             binds = [None] + list(app.config.get('SQLALCHEMY_BINDS') or ())
             for b in binds:
